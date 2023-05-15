@@ -1,6 +1,8 @@
+import { Button, HStack, Heading } from '@chakra-ui/react';
 import './App.css';
 import * as fcl from "@onflow/fcl"
 import { useState, useEffect } from 'react';
+import ToggleTheme from './components/Toggletheme';
 
 fcl.config()
   .put("accessNode.api", "https://access-testnet.onflow.org")
@@ -20,9 +22,12 @@ function App() {
   }
   return (
     <div className="App">
-      <h1>Account Address: {user && user.addr ? user.addr : ''}</h1>
-      <button onClick={() => logIn()}>Log In</button>
-      <button onClick={() => fcl.unauthenticate()}>Log Out</button>
+      <ToggleTheme />
+      <Heading>Account Address: {user && user.addr ? user.addr : ''}</Heading>
+      <HStack justifyContent={"center"} spacing={"10"}>
+        <Button onClick={() => logIn()}>Log In</Button>
+        <Button onClick={() => fcl.unauthenticate()}>Log Out</Button>
+      </HStack>
     </div>
   );
 }
