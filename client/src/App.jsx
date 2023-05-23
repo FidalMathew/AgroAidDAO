@@ -1,11 +1,14 @@
-import { Text, Box } from '@chakra-ui/react'
-import Navbar from './components/Navbar'
+import { Routes, Route } from 'react-router-dom'
+import Home from './pages/Home'
+import { Box } from '@chakra-ui/react'
 function App() {
 
   return (
-    <>
-      <Navbar />
-    </>
+    <Box overflowX={"hidden"}>
+      <Routes>
+        <Route path="/" element={<Home />} />
+      </Routes>
+    </Box>
   )
 }
 
