@@ -1,11 +1,11 @@
-import './App.css'
 import { Text, Box } from '@chakra-ui/react'
+import Navbar from './components/Navbar'
 function App() {
 
   return (
-    <Box minH="100vh">
-      <Text>Hello</Text>
-    </Box>
+    <>
+      <Navbar />
+    </>
   )
 }
 
