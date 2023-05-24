@@ -40,7 +40,6 @@ contract APIConsumer is ChainlinkClient, ConfirmedOwner {
         fee = (1 * LINK_DIVISIBILITY) / 10; // 0,1 * 10**18 (Varies by network and job)
     }
 
-
     /**
      * Create a Chainlink request to retrieve API response, find the target
      * data, then multiply by 1000000000000000000 (to remove decimal places from data).
@@ -101,9 +100,8 @@ contract APIConsumer is ChainlinkClient, ConfirmedOwner {
         );
     }
 
-    function viewTemperature() public view returns (uint256){
+    function viewTemperature() public view returns (uint256) {
         // requestVolumeData();
         return volume;
     }
 }
-
