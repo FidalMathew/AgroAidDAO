@@ -229,30 +229,30 @@ const DAO = () => {
                             <Th>Name</Th>
                             <Th isNumeric>Proposal Title</Th>
                             <Th isNumeric>Status</Th>
-                            <Th>Amount requested</Th>
+                            <Th textAlign={"right"}>Amount requested</Th>
                         </Tr>
                     </Thead>
                     <Tbody>
                         <Tr>
-                            <Td textAlign={"right"}>inches</Td>
-                            <Td textAlign={"right"}>millimetres (mm)</Td>
-                            <Td textAlign={"right"} isNumeric>25.4</Td>
+                            <Td >0x10AbbDc83...CBa</Td>
+                            <Td >Jaydeep Dey</Td>
+                            <Td textAlign={"right"}>Loan for Education</Td>
                             <Td textAlign={"right"}><Badge colorScheme='green'>Success</Badge></Td>
-                            <Td textAlign={"right"} isNumeric>25.4</Td>
+                            <Td isNumeric>25.4</Td>
                         </Tr>
                         <Tr>
-                            <Td>feet</Td>
-                            <Td>centimetres (cm)</Td>
-                            <Td isNumeric>30.48</Td>
-                            <Td><Badge colorScheme='green'>Success</Badge></Td>
-                            <Td isNumeric>30.48</Td>
+                            <Td >0x10AbbDc83...CBa</Td>
+                            <Td >Fidal Mathew</Td>
+                            <Td textAlign={"right"}>Loan for Farmer</Td>
+                            <Td textAlign={"right"}><Badge colorScheme='green'>Success</Badge></Td>
+                            <Td textAlign={"right"}>30.48</Td>
                         </Tr>
                         <Tr>
-                            <Td>yards</Td>
-                            <Td>metres (m)</Td>
-                            <Td isNumeric>0.91444</Td>
-                            <Td><Badge colorScheme='green'>Success</Badge></Td>
-                            <Td isNumeric>0.91444</Td>
+                            <Td>0x10AbbDc83...CBa</Td>
+                            <Td>Aryan Vigyat</Td>
+                            <Td textAlign={"right"}>Loan for VIT</Td>
+                            <Td textAlign={"right"}><Badge colorScheme='green'>Success</Badge></Td>
+                            <Td textAlign={"right"}>0.91444</Td>
                         </Tr>
                     </Tbody>
                     {/* <Tfoot>
