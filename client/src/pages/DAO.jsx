@@ -234,11 +234,11 @@ const DAO = () => {
                     </Thead>
                     <Tbody>
                         <Tr>
-                            <Td>inches</Td>
-                            <Td>millimetres (mm)</Td>
-                            <Td isNumeric>25.4</Td>
-                            <Td><Badge colorScheme='green'>Success</Badge></Td>
-                            <Td isNumeric>25.4</Td>
+                            <Td textAlign={"right"}>inches</Td>
+                            <Td textAlign={"right"}>millimetres (mm)</Td>
+                            <Td textAlign={"right"} isNumeric>25.4</Td>
+                            <Td textAlign={"right"}><Badge colorScheme='green'>Success</Badge></Td>
+                            <Td textAlign={"right"} isNumeric>25.4</Td>
                         </Tr>
                         <Tr>
                             <Td>feet</Td>
