@@ -6,10 +6,12 @@ import "./Request.sol";
 
 contract AgroDAO {
     Token private immutable agriToken;
+    APIConsumer private immutable chainC;
     uint256 private constant INITIAL_TOKEN_AMOUNT = 10000000;
     address private immutable maintainer;
     uint256 private constant INITIAL_USER_AMOUNT = 1000;
     address public agriTokenAddress;
+    address public chainLinkAddress;
 
     // make a farmers details struct and map it
     struct Farmer {
