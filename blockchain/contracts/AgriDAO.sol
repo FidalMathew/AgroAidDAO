@@ -1,51 +1,72 @@
-// SPDX-License-Identifier: GPL-3.0
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.7;
 
-pragma solidity >=0.8.2 <0.9.0;
-import "./Token.sol";
+// AutomationCompatible.sol imports the functions from both ./AutomationBase.sol and
+// ./interfaces/AutomationCompatibleInterface.sol
+import "@chainlink/contracts/src/v0.8/AutomationCompatible.sol";
 import "./Request.sol";
+import "./Token.sol";
 
-contract AgroDAO {
+contract AgroDAO is AutomationCompatibleInterface {
     Token private immutable agriToken;
     APIConsumer private immutable chainC;
+
     uint256 private constant INITIAL_TOKEN_AMOUNT = 10000000;
-    address private immutable maintainer;
     uint256 private constant INITIAL_USER_AMOUNT = 1000;
+
     address public agriTokenAddress;
     address public chainLinkAddress;
 
-    // make a farmers details struct and map it
+    uint256 public DAOBalance = 0;
+
+    address[] public addresses;
+    mapping(address => bool[]) weather;
+
     struct Farmer {
         address farmerAddress;
         // more details can be added
         uint256 loan;
-        uint256 longitute;
-        uint256 latitude;
+        string longitude;
+        string latitude;
     }
 
-    // join the dao
     mapping(address => Farmer) private members;
 
-    receive() external payable {}
+    struct proposal {
+        string description;
+        address owner;
+        uint256 amount;
+        bool isExecuted;
+        uint256 startTime;
+        uint256 endTime;
+        uint256 votesFor;
+        uint256 votesAgainst;
+        address[] voters;
+    }
 
-    constructor() payable {
-        agriToken = new Token(INITIAL_TOKEN_AMOUNT, address(this));
-        maintainer = msg.sender;
-        chainC = new APIConsumer();
+    proposal[] proposals;
+
+    uint256 public tempChainlink;
+
+    uint public immutable interval;
+    uint public lastTimeStamp;
+
+    constructor(uint updateInterval) {
+        interval = updateInterval;
+        lastTimeStamp = block.timestamp;
+        // counter = 0;
+
         // mint the tokens first
+        agriToken = new Token(INITIAL_TOKEN_AMOUNT, address(this));
         agriTokenAddress = address(agriToken);
+
+        chainC = new APIConsumer();
         chainLinkAddress = address(chainC);
     }
 
-    function contractTokenBalance() public view returns (uint256) {
-        return agriToken.balanceOf(address(this));
+    function addAddress(address _newAddress) public {
+        addresses.push(_newAddress);
     }
-
-    function getTokenAddress() public view returns (address) {
-        return agriTokenAddress;
-    }
-
-    // common dao pool amount (? will the member joining the dao pays for it)
-    uint256 public DAOBalance = 0;
 
     function getDAOBalance() public view returns (uint256) {
         return DAOBalance;
@@ -57,8 +78,8 @@ contract AgroDAO {
 
     function joinDAO(
         address payable user,
-        uint256 _longitude,
-        uint256 _latitude
+        string memory _longitude,
+        string memory _latitude
     ) public payable {
         // check if membership already exists, if not append in mapping
         require(
@@ -75,7 +96,6 @@ contract AgroDAO {
         agriToken.transfer(msg.sender, INITIAL_USER_AMOUNT);
     }
 
-    // TODO: Find ways to fund the DAO
     function fundDAO(address payable user) public payable {
         // check if the person is a member of the DAO
         require(
@@ -87,25 +107,6 @@ contract AgroDAO {
         payable(address(this)).transfer(msg.value);
         DAOBalance += msg.value;
     }
-
-    struct proposal {
-        string description;
-        address owner;
-        uint256 amount;
-        bool isExecuted;
-        uint256 startTime;
-        uint256 endTime;
-        uint256 votesFor;
-        uint256 votesAgainst;
-        address[] voters;
-    }
-
-    proposal[] proposals;
-
-    // chainlink weather functions
-    uint256 public tempChainlink;
-
-    mapping(address => uint256) loanTimer;
 
     function createProposal(
         string memory _description,
@@ -228,8 +229,29 @@ contract AgroDAO {
         selectedProposal.voters.push(msg.sender);
     }
 
-    function requestLoanChainlink() public returns (bool) {
-        chainC.requestVolumeData();
+    // chainlink automation
+
+    function checkUpkeep(
+        bytes calldata /* checkData */
+    )
+        external
+        view
+        override
+        returns (
+            // returns (bool upkeepNeeded, bytes memory /* performData */)
+            bool upkeepNeeded,
+            bytes memory /* performData */
+        )
+    {
+        upkeepNeeded = (block.timestamp - lastTimeStamp) > interval;
+        // We don't use the checkData in this example. The checkData is defined when the Upkeep was registered.
+    }
+
+    function requestLoanChainlink(address _add) public returns (bool) {
+        chainC.requestVolumeData(
+            members[_add].longitude,
+            members[_add].latitude
+        );
         tempChainlink = chainC.viewTemperature();
 
         if (tempChainlink > 40 * 1000000000000000000)
@@ -238,5 +260,19 @@ contract AgroDAO {
             return true;
 
         return false;
+    }
+
+    function performUpkeep(bytes calldata /* performData */) external override {
+        //We highly recommend revalidating the upkeep in the performUpkeep function
+        if ((block.timestamp - lastTimeStamp) > interval) {
+            lastTimeStamp = block.timestamp;
+
+            // update farmers array
+            for (uint256 i = 0; i < addresses.length; i++) {
+                bool res = requestLoanChainlink(addresses[i]);
+                weather[addresses[i]].push(res);
+            }
+        }
+        // We don't use the performData in this example. The performData is generated by the Automation Node's call to your checkUpkeep function
     }
 }
