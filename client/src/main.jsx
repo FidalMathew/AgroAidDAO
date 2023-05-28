@@ -6,6 +6,7 @@ import { BrowserRouter } from 'react-router-dom'
 import { ChakraProvider } from '@chakra-ui/react'
 
 import { extendTheme } from "@chakra-ui/react"
+import DAOContextprovider from './context/DAOContext.jsx'
 
 const theme = extendTheme({
   initialColorMode: "dark",
@@ -17,11 +18,13 @@ const theme = extendTheme({
 })
 
 ReactDOM.createRoot(document.getElementById('root')).render(
-  <BrowserRouter>
-    <ChakraProvider theme={theme}>
-      <React.StrictMode>
-        <App />
-      </React.StrictMode>
-    </ChakraProvider>
-  </BrowserRouter>
+  <DAOContextprovider>
+    <BrowserRouter>
+      <ChakraProvider theme={theme}>
+        <React.StrictMode>
+          <App />
+        </React.StrictMode>
+      </ChakraProvider>
+    </BrowserRouter>
+  </DAOContextprovider>
 )

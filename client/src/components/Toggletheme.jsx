@@ -7,7 +7,7 @@ const ToggleTheme = () => {
         toggleColorMode();
         const styleEl = document.createElement('style');
         const cssText = document.createTextNode(
-            'html * { transition: color, background-color 0.3s ease-out!important }',
+            'html * { transition: color, background-color 0.2s ease-out!important }',
         );
         styleEl.appendChild(cssText);
         document.head.appendChild(styleEl);

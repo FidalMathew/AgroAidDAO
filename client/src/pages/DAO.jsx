@@ -1,5 +1,14 @@
 import {
-    Avatar, Box, Container, Divider, Flex, Grid, HStack, Heading, Icon, SimpleGrid, Stack, Stat, StatLabel, StatNumber, Text, VStack, useColorModeValue, chakra, Link, Center, FormControl, FormLabel, Input, Checkbox, Button, Textarea, NumberInput, NumberInputField, NumberInputStepper, NumberIncrementStepper, NumberDecrementStepper, Table,
+    Avatar,
+    Box,
+    Container,
+    Divider,
+    Flex,
+    Grid,
+    HStack,
+    Heading,
+    Icon,
+    SimpleGrid, Stack, Stat, StatLabel, StatNumber, Text, VStack, useColorModeValue, chakra, Center, FormControl, FormLabel, Input, Checkbox, Button, Textarea, NumberInput, NumberInputField, NumberInputStepper, NumberIncrementStepper, NumberDecrementStepper, Table,
     Thead,
     Tbody,
     Tfoot,
@@ -9,11 +18,16 @@ import {
     TableCaption,
     TableContainer,
     Badge,
+    FormErrorMessage,
 } from "@chakra-ui/react"
+import { Link } from "react-router-dom";
 import Navbar from "../components/Navbar"
-import { Fragment } from "react";
+import { Fragment, useEffect } from "react";
 import { GoPrimitiveDot } from 'react-icons/go';
 import { FaRegComment, FaRegHeart, FaRegEye } from 'react-icons/fa';
+import { Field, Formik } from 'formik';
+import * as Yup from 'yup';
+import { useState } from "react";
 
 const notifications = [
     {
@@ -66,27 +80,38 @@ const articles = [
 
 
 const DAO = () => {
+    const [checked, setChecked] = useState(false)
+    useEffect(()=> {
+        console.log(checked, 'checked')
+    }, [checked])
     return (
         <>
             <Navbar />
             <HStack>
 
-                <Box maxW="7xl" mx={'auto'} pt={5} px={{ base: 2, sm: 12, md: 17 }}>
+                <Box m="auto" pt={5} px={{ base: 2, sm: 12, md: 17 }}>
                     <Heading
                         textAlign={'center'}
                         fontSize={'4xl'}
                         pb={10}
                         fontWeight={'bold'}>
-                        DAO Community Name
+                        DAO Community Name 👨‍🌾
                     </Heading>
-                    <SimpleGrid w="70vw" columns={{ base: 1, md: 3 }} spacing={{ base: 5, lg: 8 }} m="auto">
+                    <Container>
+                        {/* write a 3 line random description about dao */}
+                        <Text textAlign={'center'} fontSize={'md'} pb={10} fontWeight={'normal'}>
+                            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla quam velit, vulputate eu pharetra nec, mattis ac neque. Duis vulputate commodo lectus, ac blandit elit tincidunt id.
+                        </Text>
+                    </Container>
+                    <SimpleGrid w="70vw" columns={{ base: 1, md: 4 }} spacing={{ base: 5, lg: 8 }} m="auto">
                         <StatsCard title={'DAO Balance'} stat={'1000 ETH'} />
+                        <StatsCard title={'AGRO Tokens'} stat={'10 AGRO'} />
                         <StatsCard title={'No of Proposals active'} stat={'30'} />
                         <StatsCard title={'Number of Members'} stat={'10'} />
                     </SimpleGrid>
                 </Box>
             </HStack>
-            <Flex justifyContent={"space-between"} flexDir={{ base: "column", sm: "row" }} alignItems={"center"} p={{ base: 5, md: 10 }}>
+            <Flex justifyContent={"center"} w="100vw" m="auto" flexDir={{ base: "column", sm: "row" }} alignItems={"center"} p={{ base: 5, md: 10 }}>
 
                 {/* members */}
                 <VStack minW="xs" border="1px solid" borderColor="gray.400" rounded="md" overflow="hidden" spacing={0} display={{ base: "none", lg: "flex" }}>
@@ -100,6 +125,7 @@ const DAO = () => {
                                 alignItems="center"
                                 _hover={{ bg: useColorModeValue('gray.200', 'gray.700') }}
                             >
+
                                 <Center flexDirection={"column"}>
                                     <chakra.h3 isExternal fontWeight="bold" fontSize="lg">
                                         {article.title}
@@ -128,44 +154,113 @@ const DAO = () => {
                     ml={{ base: "auto", md: 10 }}
                     mr={{ base: "auto", md: 10 }}
                 >
-                    <Heading size="md" pb={5} textAlign={"center"}>Enter your Proposals</Heading>
-                    <Stack spacing={4}>
-                        <FormControl id="title">
-                            <FormLabel>Title</FormLabel>
-                            <Input type="text" placeholder="Proposal Title" />
-                        </FormControl>
-                        <FormControl id="password">
-                            <FormLabel>Description</FormLabel>
-                            <Textarea placeholder="Enter proposal description" />
-                        </FormControl>
-                        <Stack spacing={5}>
-                            <Stack
-                                direction={{ base: 'column', sm: 'row' }}
-                                align={'start'}
-                                justify={'start'}>
-                                <Checkbox>Ask for Payment?</Checkbox>
-                            </Stack>
-                            <NumberInput defaultValue={1} max={6} min={1} clampValueOnBlur={false}>
-                                <NumberInputField />
-                                <NumberInputStepper>
-                                    <NumberIncrementStepper />
-                                    <NumberDecrementStepper />
-                                </NumberInputStepper>
-                            </NumberInput>
-                            <Button
-                                bg={'blue.400'}
-                                color={'white'}
-                                _hover={{
-                                    bg: 'blue.500',
-                                }}>
-                                Create Proposal
-                            </Button>
-                        </Stack>
-                    </Stack>
+                    <Formik
+                        initialValues={{
+                            title: '',
+                            description: '',
+                            askForPayment: false,
+                            amount: 1,
+                        }}
+
+                        validationSchema={Yup.object(
+                            {
+                                title: Yup.string().required('Title is required'),
+                                description: Yup.string().required('Description is required'),
+                                askForPayment: Yup.boolean(),
+                                amount: Yup.number().min(1, 'Amount must be greater than 0').required('Amount is required'),
+                            }
+                        )}
+
+                        onSubmit={(value, action) => {
+                            console.log(value);
+                            action.resetForm();
+                        }}
+                    >
+                        {formik => (
+                            <form onSubmit={formik.handleSubmit}>
+
+                                <Heading size="md" pb={5} textAlign={"center"}>Create Proposals</Heading>
+                                <Stack spacing={4}>
+                                    <FormControl
+                                        id="title"
+                                        isInvalid={formik.errors.title && formik.touched.title}
+                                    >
+                                        <FormLabel>Title</FormLabel>
+                                        <Field name="title" as={Input} placeholder="Enter proposal title" />
+                                        <FormErrorMessage fontSize="xs">{formik.errors.title}</FormErrorMessage>
+                                    </FormControl>
+                                    <FormControl id="password"
+                                        isInvalid={formik.errors.description && formik.touched.description}
+                                    >
+                                        <FormLabel>Description</FormLabel>
+                                        <Field name="description" as={Textarea} placeholder="Enter proposal description" />
+                                        <FormErrorMessage fontSize="xs">{formik.errors.description}</FormErrorMessage>
+                                    </FormControl>
+                                    <Stack spacing={5}>
+                                        <Stack
+                                            direction={{ base: 'column', sm: 'row' }}
+                                            align={'start'}
+                                            justify={'start'}>
+                                            <FormControl
+                                                id="askForPayment"
+                                                isInvalid={formik.errors.askForPayment && formik.touched.askForPayment}
+                                            >
+                                                <Field
+                                                    onChange={
+                                                        (e) => {
+                                                            setChecked((prev) => !prev)
+                                                        }
+                                                    }
+                                                    name="askForPayment" as={Checkbox}>Ask for Payment?</Field>
+                                                <FormErrorMessage fontSize="xs">{formik.errors.askForPayment}</FormErrorMessage>
+                                            </FormControl>
+                                        </Stack>
+                                        <FormControl
+                                            id="amount"
+                                            isInvalid={formik.errors.amount && formik.touched.amount}
+                                        >
+                                            <Field name="inputValue">
+                                                {({ field, form }) => (
+                                                    <div>
+                                                        <NumberInput
+                                                            {...field}
+                                                            defaultValue={1}
+                                                            placeholder="Enter amount.."
+                                                            isDisabled={!checked}
+                                                            clampValueOnBlur={false}
+                                                            min={1}
+                                                            max={6}
+                                                        >
+                                                            <NumberInputField />
+                                                            <NumberInputStepper>
+                                                                <NumberIncrementStepper />
+                                                                <NumberDecrementStepper />
+                                                            </NumberInputStepper>
+                                                        </NumberInput>
+                                                        <FormErrorMessage fontSize="xs">{formik.errors.amount}</FormErrorMessage>
+                                                    </div>
+                                                )}
+                                            </Field>
+                                        </FormControl>
+                                        <Button
+                                            type="submit"
+                                            bg={'blue.400'}
+                                            color={'white'}
+                                            _hover={{
+                                                bg: 'blue.500',
+                                            }}>
+                                            Create Proposal
+                                        </Button>
+                                    </Stack>
+                                </Stack>
+                            </form>
+                        )}
+
+                    </Formik>
                 </Box>
 
                 {/*  */}
-                <VStack
+                {/* <VStack
                     // boxShadow={useColorModeValue(
                     //     '0 3px 4px rgba(160, 174, 192, 0.6)',
                     //     '0 3px 4px rgba(9, 17, 28, 0.9)'
@@ -217,10 +312,10 @@ const DAO = () => {
                             {notifications.length - 1 !== index && <Divider m={0} />}
                         </Fragment>
                     ))}
-                </VStack>
+                </VStack> */}
             </Flex>
-            <TableContainer m="auto" maxW="80vw">
-                <Heading size="md" p={4} textAlign={"center"}>Proposals Record</Heading>
+            <TableContainer m="auto" maxW="80vw" mb="4">
+                <Heading size="md" p={4} textAlign={"center"}>Member Record</Heading>
                 <Table variant='striped' mb="6">
                     {/* <TableCaption>Imperial to metric conversion factors</TableCaption> */}
                     <Thead>
@@ -234,24 +329,24 @@ const DAO = () => {
                     </Thead>
                     <Tbody>
                         <Tr>
-                            <Td >0x10AbbDc83...CBa</Td>
+                            <Td ><Link to="/dao/343/343">0x10AbbDc83...CBa</Link></Td>
                             <Td >Jaydeep Dey</Td>
                             <Td textAlign={"right"}>Loan for Education</Td>
-                            <Td textAlign={"right"}><Badge colorScheme='green'>Success</Badge></Td>
+                            <Td textAlign={"right"}><Badge colorScheme='yellow'>Pending</Badge></Td>
                             <Td isNumeric>25.4</Td>
                         </Tr>
                         <Tr>
-                            <Td >0x10AbbDc83...CBa</Td>
+                            <Td ><Link to="/dao/343/343">0x10AbbDc83...CBa</Link></Td>
                             <Td >Fidal Mathew</Td>
                             <Td textAlign={"right"}>Loan for Farmer</Td>
                             <Td textAlign={"right"}><Badge colorScheme='green'>Success</Badge></Td>
                             <Td textAlign={"right"}>30.48</Td>
                         </Tr>
                         <Tr>
-                            <Td>0x10AbbDc83...CBa</Td>
+                            <Td ><Link to="/dao/343/343">0x10AbbDc83...CBa</Link></Td>
                             <Td>Aryan Vigyat</Td>
                             <Td textAlign={"right"}>Loan for VIT</Td>
-                            <Td textAlign={"right"}><Badge colorScheme='green'>Success</Badge></Td>
+                            <Td textAlign={"right"}><Badge colorScheme='red'>Expired</Badge></Td>
                             <Td textAlign={"right"}>0.91444</Td>
                         </Tr>
                     </Tbody>
