@@ -3,9 +3,8 @@
 pragma solidity >=0.8.2 <0.9.0;
 import "./Token.sol";
 import "@chainlink/contracts/src/v0.8/AutomationCompatible.sol";
+
 // import "./ChainRequest.sol";
-
-
 
 contract AgroDAO {
     Token private immutable agriToken;
@@ -22,28 +21,25 @@ contract AgroDAO {
         address farmerAddress;
         // more details can be added
         uint256 loan;
-        string  longitude;
+        string longitude;
         string latitude;
         uint256 reputation;
-      
-
     }
 
     uint256 public a;
 
-      function getMsgValue()payable public{
-         a=msg.value;
-      }
+    function getMsgValue() public payable {
+        a = msg.value;
+    }
 
     // join the dao
     mapping(address => Farmer) public members;
-    mapping(string=>string []) public plantDataSet;
+    mapping(string => string[]) public plantDataSet;
     address[] public daoMembers;
 
     receive() external payable {}
 
     constructor() payable {
-
         agriToken = new Token(INITIAL_TOKEN_AMOUNT, address(this));
         maintainer = msg.sender;
         // loanTimer[msg.sender]=block.timestamp+20 seconds;
@@ -55,8 +51,6 @@ contract AgroDAO {
         agriTokenAddress = address(agriToken);
         // chainLinkAddress = address(chainC);
     }
-
-  
 
     function contractTokenBalance() public view returns (uint256) {
         return agriToken.balanceOf(address(this));
@@ -82,15 +76,15 @@ contract AgroDAO {
         string memory _latitude
     ) public payable {
         // check if membership already exists, if not append in mapping
-        address user=payable(msg.sender);
+        address user = payable(msg.sender);
         require(
             members[user].farmerAddress == address(0),
             "Already part of the DAO"
         );
-        
+
         require(msg.value >= 0.01 ether, "Please send exactly 0.01 ETH");
 
-        members[user] = Farmer(user, 0, _longitude, _latitude,0);
+        members[user] = Farmer(user, 0, _longitude, _latitude, 0);
         daoMembers.push(msg.sender);
 
         payable(address(this)).transfer(msg.value);
@@ -100,18 +94,24 @@ contract AgroDAO {
     }
 
     // transfer token on funding the dao
-    // transfer token to funder 
-  function transfer(address receiver,uint256 numTokens) public returns (bool) {
-      uint256 contractCurrTokenBalance=contractTokenBalance();
-      require(numTokens <= contractCurrTokenBalance,"Insufficient number of tokens");
-      agriToken.transfer(receiver,numTokens);
-      return true;
-}
+    // transfer token to funder
+    function transfer(
+        address receiver,
+        uint256 numTokens
+    ) public returns (bool) {
+        uint256 contractCurrTokenBalance = contractTokenBalance();
+        require(
+            numTokens <= contractCurrTokenBalance,
+            "Insufficient number of tokens"
+        );
+        agriToken.transfer(receiver, numTokens);
+        return true;
+    }
 
     // TODO: Find ways to fund the DAO
     function fundDAO() public payable {
         // check if the person is a member of the DAO
-        address user=payable(msg.sender);
+        address user = payable(msg.sender);
         require(
             members[user].farmerAddress != address(0),
             "Please join the DAO before funding !!"
@@ -120,8 +120,8 @@ contract AgroDAO {
 
         payable(address(this)).transfer(msg.value);
         DAOBalance += msg.value;
-        uint256 tokenSent=msg.value/10000000000000;
-        transfer(msg.sender,tokenSent);
+        uint256 tokenSent = msg.value / 10000000000000;
+        transfer(msg.sender, tokenSent);
 
         // increase the reputatation of the farmer after funding to dao
         members[msg.sender].reputation++;
@@ -143,20 +143,21 @@ contract AgroDAO {
 
     // chainlink weather functions
     uint256 public tempChainlink;
-    uint256 _duration=130 seconds;
+    uint256 _duration = 130 seconds;
 
     mapping(address => uint256) public loanTimer;
 
     function createProposal(
         string memory _description,
         uint256 _amount
-        
     ) public {
         // reduce agroToken
-         
-        require(getUserBalance(msg.sender)>=1200,"Insufficient tokens");
-        require(members[msg.sender].loan==0,"You already have a existing loan");
-       
+
+        require(getUserBalance(msg.sender) >= 1200, "Insufficient tokens");
+        require(
+            members[msg.sender].loan == 0,
+            "You already have a existing loan"
+        );
 
         uint256 startTime = block.timestamp;
         uint256 endTime = startTime + _duration;
@@ -216,8 +217,9 @@ contract AgroDAO {
         Farmer storage fac = members[proposals[_proposalIndex].owner];
 
         // mark the loan taken field  and loan repayment field
-        members[proposals[_proposalIndex].owner].loan=proposals[_proposalIndex].amount;
-       
+        members[proposals[_proposalIndex].owner].loan = proposals[
+            _proposalIndex
+        ].amount;
 
         fac.loan = proposals[_proposalIndex].amount; // add interest too
         loanTimer[msg.sender] = block.timestamp + LOAN_TIME;
@@ -277,91 +279,80 @@ contract AgroDAO {
         selectedProposal.voters.push(msg.sender);
     }
 
-    function loanPayBack () public payable
-    {
-        address user=payable(msg.sender);
+    function loanPayBack() public payable {
+        address user = payable(msg.sender);
 
-       // check if user has taken a loan 
-        require(members[user].loan>=0,"No loan taken or already repaid");
-        
-        // repay the loan amount 
-        require(msg.value==members[user].loan,"Please transact exact loan amount");
+        // check if user has taken a loan
+        require(members[user].loan >= 0, "No loan taken or already repaid");
+
+        // repay the loan amount
+        require(
+            msg.value == members[user].loan,
+            "Please transact exact loan amount"
+        );
         payable(address(this)).transfer(msg.value);
-        members[user].loan=0;
-        
+        members[user].loan = 0;
+
         // if the loan is repaid in time , increase the reputation of the user
-        if(loanTimer[msg.sender]<=block.timestamp){
+        if (loanTimer[msg.sender] <= block.timestamp) {
             members[user].reputation++;
-            loanTimer[msg.sender] =0;
-        }
-        else members[user].reputation--;
-        
+            loanTimer[msg.sender] = 0;
+        } else members[user].reputation--;
     }
 
-   address [] topContributors;
-   event topContributorsEmitter(address [] topContributors);
-    function getTopContributor() public  {
-         
+    address[] topContributors;
+    event topContributorsEmitter(address[] topContributors);
+
+    function getTopContributor() public {
         delete topContributors;
-        uint256 daoLength=daoMembers.length;
+        uint256 daoLength = daoMembers.length;
 
-         uint256 maxReputations=0;
+        uint256 maxReputations = 0;
 
-        for(uint256 i=0;i<daoLength;i++)
-        {
-            address user=daoMembers[i];
+        for (uint256 i = 0; i < daoLength; i++) {
+            address user = daoMembers[i];
 
-            uint256 reputation=members[user].reputation;
+            uint256 reputation = members[user].reputation;
 
-            if(reputation>maxReputations)maxReputations=reputation;
+            if (reputation > maxReputations) maxReputations = reputation;
         }
 
-        for(uint256 i=0;i<daoLength;i++)
-        {
-            address user=daoMembers[i];
+        for (uint256 i = 0; i < daoLength; i++) {
+            address user = daoMembers[i];
 
-            uint256 reputation=members[user].reputation;
+            uint256 reputation = members[user].reputation;
 
-            if(reputation==maxReputations)
-            {
+            if (reputation == maxReputations) {
                 topContributors.push(user);
             }
         }
         emit topContributorsEmitter(topContributors);
-         
     }
 
-    function contibuteDataset(string memory url,string memory name) public{
-
-        // check if the image is valid 
+    function contibuteDataset(string memory url, string memory name) public {
+        // check if the image is valid
         plantDataSet[name].push(url);
 
         // give tokens to the user
-       address user=payable(msg.sender);
-        transfer(user,100);
+        address user = payable(msg.sender);
+        transfer(user, 100);
     }
-    function paymentDue(address addr)
-        private
-        view
-        returns (bool)
-    {
+
+    function paymentDue(address addr) private view returns (bool) {
         return (members[addr].loan > 0 &&
             loanTimer[addr] > 0 &&
-            block.timestamp - loanTimer[addr] >
-            0);
+            block.timestamp - loanTimer[addr] > 0);
     }
+
     event PaymentDone(address recipient, uint256 amount);
     event Test(uint256 value);
-    function checkPayment() public
-    {
+
+    function checkPayment() public {
         emit Test(123445);
         for (uint256 i = 0; i < daoMembers.length; ++i) {
-            if (paymentDue(daoMembers[i]))
-            {
+            if (paymentDue(daoMembers[i])) {
                 emit PaymentDone(daoMembers[i], loanTimer[daoMembers[i]]);
             }
         }
     }
-    
-
 }
