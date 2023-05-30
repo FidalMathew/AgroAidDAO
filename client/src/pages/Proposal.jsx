@@ -102,7 +102,7 @@ const Proposal = () => {
                             aliquam nisl nunc vel nunc. Donec euismod, nisl vitae aliquam
                         </Text>
                     </VStack>
-                    <Stack direction={{ base: "column", lg: "row" }} alignItems={"center"} justifyContent={"center"} minW="50vw" spacing="6">
+                    <Stack direction={{ base: "column", xl: "row" }} alignItems={"center"} justifyContent={"center"} minW="50vw" spacing="6">
                         <Box border={"1px"} rounded={"xl"} m="5">
                             <Heading size={"md"} textAlign={"center"} p="3">Voting</Heading>
                             <PieChart width={400} height={400}>
@@ -125,9 +125,9 @@ const Proposal = () => {
                             </PieChart>
                         </Box>
                         <VStack spacing="6">
-                            <HStack>
+                            <HStack w="full">
                                 <StatsCard title={'Amount Requested'} stat={'10 ETH'} />
-                                <StatsCard title={'Time left'} stat={'10 mins'} />
+                                {/* <StatsCard title={'Time left'} stat={'10 mins'} /> */}
                             </HStack>
                             <Box border={"1px"} rounded={"xl"} >
                                 <Heading size={"md"} textAlign={"center"} p="3">Voting Details</Heading>

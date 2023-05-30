@@ -2,19 +2,24 @@ import { createContext, useState, useEffect } from "react"
 import TokenABI from "../utils/Token.json"
 import AgroDAOabi from "../utils/AgroDAO.json"
 import { ethers } from "ethers";
+import { useNavigate } from "react-router-dom";
+import { useToast } from "@chakra-ui/react";
 
 export const DAOContext = createContext();
 
 const DAOContextprovider = ({ children }) => {
 
     const [chainId, setChainId] = useState("")
-
     const [currentAccount, setCurrentAccount] = useState("")
     const [errorPage, setErrorPage] = useState(false)
     const contractAddress = "0x4E21bC5E5D3FeCc1D55C40fCc6162a1EFB751B73"
     const [daoContract, setdaoContract] = useState("");
 
     const { ethereum } = window;
+    const navigate = useNavigate()
+    const toast = useToast()
+
+    
 
     const getContract = async () => {
 
@@ -75,6 +80,7 @@ const DAOContextprovider = ({ children }) => {
                 else {
                     setCurrentAccount("")
                     console.log("No authorized accounts found!");
+                    navigate('/connectwallet')
                 }
 
 
@@ -105,9 +111,24 @@ const DAOContextprovider = ({ children }) => {
                 .then((accounts) => {
                     const selectedAccount = accounts[0];
                     setCurrentAccount(selectedAccount);
+                    navigate("/")
+                    toast({
+                        title: "Account connected.",
+                        description: "You can now use the app.",
+                        status: "success",
+                        duration: 9000,
+                        isClosable: true,
+                    })
                 })
                 .catch((error) => {
                     console.error('Error connecting wallet:', error);
+                    toast({
+                        title: "Error connecting wallet.",
+                        description: "Please try again.",
+                        status: "error",
+                        duration: 9000,
+                        isClosable: true,
+                    })
                 });
         } else {
             console.error('No wallet provider found.');

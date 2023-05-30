@@ -1,48 +1,64 @@
-import { Container, chakra, Stack, Text, Button, Box, Heading } from '@chakra-ui/react';
+import { Container, chakra, Stack, Text, Button, Box, Heading, Image, FormControl, FormLabel, HStack, NumberInput, NumberInputField, NumberInputStepper, NumberIncrementStepper, Input, Textarea, Checkbox, Flex, useColorModeValue } from '@chakra-ui/react';
 import Navbar from "../components/Navbar"
 import CardComponent from "../components/Cardcomponent"
 import { FaGithub } from 'react-icons/fa';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import useGlobalContext from '../hooks/useGlobalContext';
+import { useEffect } from 'react';
+import { Field, Formik } from 'formik';
+import * as Yup from 'yup';
 
 const Home = () => {
+    const { currentAccount } = useGlobalContext()
+    const navigate = useNavigate()
+    useEffect(() => {
+        // redirect to connect wallet page if not connected
+        if (!currentAccount) {
+            navigate("/connectwallet")
+        }
+    }, [])
+
     return (
         <>
-            <Navbar />
-            <Box p={{ base: 8, sm: 14 }} mt="10">
-                <Stack direction="column" m="auto" alignItems="center" w="70vw">
-                    {/* <Heading
-                        fontSize={'7xl'}
-                        fontWeight="bold"
-                        textAlign="center"
-                        maxW="600px"
-                    >
-                        Create accessible React apps{' '}
-                        <chakra.span color="teal">
-                            with speed
-                        </chakra.span>
-                    </Heading>
-                    <Text maxW="550px" fontSize="xl" textAlign="center" color="gray.500">
-                        Chakra UI is a simple, modular and accessible component library that gives you the
-                        building blocks you need to build your React applications.
-                    </Text> */}
-                    <Stack
-                        direction={{ base: 'column', sm: 'row' }}
-                        w={{ base: '100%', sm: 'auto' }}
-                        spacing={5}
-                    >
-                        <Link to="/dao/3443"><Button
-                            colorScheme="teal"
-                            variant="outline"
-                            rounded="md"
-                            size="lg"
-                            height="3.5rem"
-                            fontSize="1.2rem"
-                        >
-                            Get Started
-                        </Button></Link>
+            <Flex w="100vw" h="100vh">
+                <Box>
+                    <Image src="/pics/farmerimg.jpg" alt="farmer" height={"full"} fit={"cover"} />
+                </Box>
+                <HStack
+                    spacing={"10"}
+                    rounded={'lg'}
+                    bg={useColorModeValue('white', 'gray.700')}
+                    boxShadow={'lg'}
+                    p={8}>
+                    <Stack spacing={4}>
+                        <FormControl id="email">
+                            <FormLabel>Email address</FormLabel>
+                            <Input type="email" />
+                        </FormControl>
+                        <FormControl id="password">
+                            <FormLabel>Password</FormLabel>
+                            <Input type="password" />
+                        </FormControl>
+                        <Stack spacing={10}>
+                            <Stack
+                                direction={{ base: 'column', sm: 'row' }}
+                                align={'start'}
+                                justify={'space-between'}>
+                                <Checkbox>Remember me</Checkbox>
+                                <Link color={'blue.400'}>Forgot password?</Link>
+                            </Stack>
+                            <Button
+                                bg={'blue.400'}
+                                color={'white'}
+                                _hover={{
+                                    bg: 'blue.500',
+                                }}>
+                                Sign in
+                            </Button>
+                        </Stack>
                     </Stack>
-                </Stack>
-            </Box>
+                </HStack>
+            </Flex>
         </>
     )
 }

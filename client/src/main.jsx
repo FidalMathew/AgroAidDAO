@@ -18,13 +18,13 @@ const theme = extendTheme({
 })
 
 ReactDOM.createRoot(document.getElementById('root')).render(
-  <DAOContextprovider>
-    <BrowserRouter>
+  <BrowserRouter>
+    <DAOContextprovider>
       <ChakraProvider theme={theme}>
         <React.StrictMode>
           <App />
         </React.StrictMode>
       </ChakraProvider>
-    </BrowserRouter>
-  </DAOContextprovider>
+    </DAOContextprovider>
+  </BrowserRouter>
 )

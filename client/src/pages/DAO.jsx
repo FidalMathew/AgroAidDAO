@@ -77,7 +77,8 @@ const articles = [
     {
         title: `Spandan Ghosh`,
         created_at: '31 Sept 2022',
-    },
+    }
+
 ];
 
 
@@ -95,7 +96,7 @@ const DAO = () => {
     const [totalProposal, setTotalProposal] = useState(0);
     // total members
     const [totalMembers, setTotalMembers] = useState(0);
-
+    
 
     useEffect(() => {
         if (daoContract) {
@@ -106,14 +107,14 @@ const DAO = () => {
             daoContract.contractTokenBalance().then((res) => {
                 setDaoToken(Number(res));
             }).catch(err => console.log(err))
-            
-            daoContract.TotalProposals().then((res)=> {
-                setTotalProposal(Number(res));
-            }).catch(err=>console.log(err)) 
 
-            daoContract.TotalMembers().then((res)=> {
+            daoContract.TotalProposals().then((res) => {
+                setTotalProposal(Number(res));
+            }).catch(err => console.log(err))
+
+            daoContract.TotalMembers().then((res) => {
                 setTotalMembers(Number(res));
-            }).catch(err=>console.log(err))
+            }).catch(err => console.log(err))
         }
     }, [daoContract])
 
@@ -146,9 +147,8 @@ const DAO = () => {
                 </Box>
             </HStack>
             <Flex justifyContent={"center"} w="100vw" m="auto" flexDir={{ base: "column", sm: "row" }} alignItems={"center"} p={{ base: 5, md: 10 }}>
-
                 {/* members */}
-                <VStack minW="xs" border="1px solid" borderColor="gray.400" rounded="md" overflow="hidden" spacing={0} display={{ base: "none", lg: "flex" }}>
+                <VStack maxH="71vh" overflowY="scroll" className="members-list" minW="xs" border="1px solid" borderColor="gray.400" rounded="md" spacing={0} display={{ base: "none", lg: "flex" }}>
                     <Heading size="sm" p={4}>Members</Heading>
                     {articles.map((article, index) => (
                         <Fragment key={index}>
@@ -157,7 +157,7 @@ const DAO = () => {
                                 p={{ base: 2, sm: 4 }}
                                 gap={3}
                                 alignItems="center"
-                                _hover={{ bg: useColorModeValue('gray.200', 'gray.700') }}
+                            // _hover={{ bg: useColorModeValue('gray.200', 'gray.700') }}
                             >
 
                                 <Center flexDirection={"column"}>
@@ -193,17 +193,19 @@ const DAO = () => {
                             title: '',
                             description: '',
                             askForPayment: false,
-                            amount: 1,
+                            amount: 0,
                         }}
 
-                        validationSchema={Yup.object(
-                            {
-                                title: Yup.string().required('Title is required'),
-                                description: Yup.string().required('Description is required'),
-                                askForPayment: Yup.boolean(),
-                                amount: Yup.number().min(1, 'Amount must be greater than 0').required('Amount is required'),
-                            }
-                        )}
+                        validationSchema={Yup.object({
+                            title: Yup.string().required('Title is required'),
+                            description: Yup.string().required('Description is required'),
+                            askForPayment: Yup.boolean(),
+                            amount: Yup.number().when('askForPayment', {
+                                is: true,
+                                then: Yup.number().required('Amount is required').min(0.01, 'Amount must be greater than 0.01'),
+                                otherwise: Yup.number(),
+                            }),
+                        })}
 
                         onSubmit={(value, action) => {
                             console.log(value);
@@ -253,17 +255,17 @@ const DAO = () => {
                                             id="amount"
                                             isInvalid={formik.errors.amount && formik.touched.amount}
                                         >
-                                            <Field name="inputValue">
+                                            <Field name="amount">
                                                 {({ field, form }) => (
                                                     <div>
                                                         <NumberInput
                                                             {...field}
-                                                            defaultValue={1}
+                                                            value={formik.values.amount}
+                                                            onChange={(value) => form.setFieldValue(field.name, value)}
                                                             placeholder="Enter amount.."
                                                             isDisabled={!checked}
                                                             clampValueOnBlur={false}
-                                                            min={1}
-                                                            max={6}
+                                                            min={0.01}
                                                         >
                                                             <NumberInputField />
                                                             <NumberInputStepper>
@@ -271,11 +273,14 @@ const DAO = () => {
                                                                 <NumberDecrementStepper />
                                                             </NumberInputStepper>
                                                         </NumberInput>
-                                                        <FormErrorMessage fontSize="xs">{formik.errors.amount}</FormErrorMessage>
+                                                        <FormErrorMessage fontSize="xs">
+                                                            {formik.errors.amount}
+                                                        </FormErrorMessage>
                                                     </div>
                                                 )}
                                             </Field>
                                         </FormControl>
+
                                         <Button
                                             type="submit"
                                             bg={'blue.400'}
