@@ -5,8 +5,79 @@
 		"type": "constructor"
 	},
 	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": false,
+				"internalType": "address",
+				"name": "recipient",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "amount",
+				"type": "uint256"
+			}
+		],
+		"name": "PaymentDone",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "value",
+				"type": "uint256"
+			}
+		],
+		"name": "Test",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": false,
+				"internalType": "address[]",
+				"name": "topContributors",
+				"type": "address[]"
+			}
+		],
+		"name": "topContributorsEmitter",
+		"type": "event"
+	},
+	{
 		"inputs": [],
 		"name": "DAOBalance",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "TotalMembers",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "TotalProposals",
 		"outputs": [
 			{
 				"internalType": "uint256",
@@ -57,6 +128,13 @@
 			}
 		],
 		"name": "castVote",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "checkPayment",
 		"outputs": [],
 		"stateMutability": "nonpayable",
 		"type": "function"
@@ -185,13 +263,7 @@
 	{
 		"inputs": [],
 		"name": "getTopContributor",
-		"outputs": [
-			{
-				"internalType": "address[]",
-				"name": "",
-				"type": "address[]"
-			}
-		],
+		"outputs": [],
 		"stateMutability": "nonpayable",
 		"type": "function"
 	},
@@ -268,6 +340,11 @@
 				"internalType": "string",
 				"name": "_latitude",
 				"type": "string"
+			},
+			{
+				"internalType": "string",
+				"name": "name",
+				"type": "string"
 			}
 		],
 		"name": "joinDAO",
@@ -280,6 +357,25 @@
 		"name": "loanPayBack",
 		"outputs": [],
 		"stateMutability": "payable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"name": "loanTimer",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
 		"type": "function"
 	},
 	{
@@ -316,6 +412,16 @@
 				"internalType": "uint256",
 				"name": "reputation",
 				"type": "uint256"
+			},
+			{
+				"internalType": "string",
+				"name": "name",
+				"type": "string"
+			},
+			{
+				"internalType": "uint256",
+				"name": "timestamp",
+				"type": "uint256"
 			}
 		],
 		"stateMutability": "view",
@@ -346,19 +452,6 @@
 		"type": "function"
 	},
 	{
-		"inputs": [],
-		"name": "tempChainlink",
-		"outputs": [
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
 		"inputs": [
 			{
 				"internalType": "uint256",
@@ -366,12 +459,60 @@
 				"type": "uint256"
 			}
 		],
-		"name": "topContributors",
+		"name": "proposals",
 		"outputs": [
 			{
+				"internalType": "string",
+				"name": "description",
+				"type": "string"
+			},
+			{
 				"internalType": "address",
-				"name": "",
+				"name": "owner",
 				"type": "address"
+			},
+			{
+				"internalType": "uint256",
+				"name": "amount",
+				"type": "uint256"
+			},
+			{
+				"internalType": "bool",
+				"name": "isExecuted",
+				"type": "bool"
+			},
+			{
+				"internalType": "uint256",
+				"name": "startTime",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "endTime",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "votesFor",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "votesAgainst",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "tempChainlink",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
 			}
 		],
 		"stateMutability": "view",

@@ -4,7 +4,6 @@ import * as Yup from 'yup';
 
 const CardComponent = () => {
   const bg = useColorModeValue('white', '#2f3244');
-
   return (
     <>
       <Card w="xs">

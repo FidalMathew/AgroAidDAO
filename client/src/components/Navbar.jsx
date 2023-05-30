@@ -7,7 +7,6 @@ import {
   Stack,
   Collapse,
   Icon,
-  Link,
   Popover,
   PopoverTrigger,
   PopoverContent,
@@ -28,7 +27,7 @@ import {
 import ToggleTheme from './Toggletheme';
 import useGlobalContext from '../hooks/useGlobalContext';
 import { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 
 export default function Navbar() {
   const { isOpen, onToggle } = useDisclosure();
@@ -121,6 +120,7 @@ export default function Navbar() {
                 <MenuList>
                   {/* Add menu items here */}
                   <MenuItem onClick={disconnectWallet}>Disconnect Wallet</MenuItem>
+                  <Link to={`/${currentAccount}`}><MenuItem>Profile</MenuItem></Link>
                 </MenuList>
               </Menu>
             }

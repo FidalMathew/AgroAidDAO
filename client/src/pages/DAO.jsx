@@ -28,6 +28,8 @@ import { FaRegComment, FaRegHeart, FaRegEye } from 'react-icons/fa';
 import { Field, Formik } from 'formik';
 import * as Yup from 'yup';
 import { useState } from "react";
+import useContract from "../hooks/useContract";
+import useGlobalContext from "../hooks/useGlobalContext";
 
 const notifications = [
     {
@@ -81,9 +83,41 @@ const articles = [
 
 const DAO = () => {
     const [checked, setChecked] = useState(false)
-    useEffect(()=> {
+    useEffect(() => {
         console.log(checked, 'checked')
     }, [checked])
+
+    const { daoContract } = useGlobalContext();
+
+    const [daoBalance, setDaoBalance] = useState(0);
+    const [daoToken, setDaoToken] = useState(0);
+    // total proposals
+    const [totalProposal, setTotalProposal] = useState(0);
+    // total members
+    const [totalMembers, setTotalMembers] = useState(0);
+
+
+    useEffect(() => {
+        if (daoContract) {
+            daoContract.getDAOBalance().then((res) => {
+                setDaoBalance(Number(res));
+            }).catch(err => console.log(err))
+
+            daoContract.contractTokenBalance().then((res) => {
+                setDaoToken(Number(res));
+            }).catch(err => console.log(err))
+            
+            daoContract.TotalProposals().then((res)=> {
+                setTotalProposal(Number(res));
+            }).catch(err=>console.log(err)) 
+
+            daoContract.TotalMembers().then((res)=> {
+                setTotalMembers(Number(res));
+            }).catch(err=>console.log(err))
+        }
+    }, [daoContract])
+
+
     return (
         <>
             <Navbar />
@@ -103,11 +137,11 @@ const DAO = () => {
                             Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla quam velit, vulputate eu pharetra nec, mattis ac neque. Duis vulputate commodo lectus, ac blandit elit tincidunt id.
                         </Text>
                     </Container>
-                    <SimpleGrid w="70vw" columns={{ base: 1, md: 4 }} spacing={{ base: 5, lg: 8 }} m="auto">
-                        <StatsCard title={'DAO Balance'} stat={'1000 ETH'} />
-                        <StatsCard title={'AGRO Tokens'} stat={'10 AGRO'} />
-                        <StatsCard title={'No of Proposals active'} stat={'30'} />
-                        <StatsCard title={'Number of Members'} stat={'10'} />
+                    <SimpleGrid w="70vw" columns={{ base: 1, lg: 4 }} spacing={{ base: 5, lg: 8 }} m="auto">
+                        <StatsCard title={'DAO Balance'} stat={daoBalance.toString() + " ETH"} />
+                        <StatsCard title={'AGRO Tokens'} stat={daoToken.toString() + " AGRO"} />
+                        <StatsCard title={'No of Proposals active'} stat={totalProposal} />
+                        <StatsCard title={'Number of Members'} stat={totalMembers} />
                     </SimpleGrid>
                 </Box>
             </HStack>
@@ -314,9 +348,9 @@ const DAO = () => {
                     ))}
                 </VStack> */}
             </Flex>
-            <TableContainer m="auto" maxW="80vw" mb="4">
+            <TableContainer m="auto" maxW="80vw" mb="4" border="1px" p="2" pb="0" rounded="lg">
                 <Heading size="md" p={4} textAlign={"center"}>Member Record</Heading>
-                <Table variant='striped' mb="6">
+                <Table variant='simple' mb="6">
                     {/* <TableCaption>Imperial to metric conversion factors</TableCaption> */}
                     <Thead>
                         <Tr>
@@ -325,14 +359,16 @@ const DAO = () => {
                             <Th isNumeric>Proposal Title</Th>
                             <Th isNumeric>Status</Th>
                             <Th textAlign={"right"}>Amount requested</Th>
+                            <Th textAlign={"right"}>DAO Token</Th>
                         </Tr>
                     </Thead>
                     <Tbody>
                         <Tr>
-                            <Td ><Link to="/dao/343/343">0x10AbbDc83...CBa</Link></Td>
+                            <Td><Link to="/dao/343/343">0x10AbbDc83...CBa</Link></Td>
                             <Td >Jaydeep Dey</Td>
                             <Td textAlign={"right"}>Loan for Education</Td>
                             <Td textAlign={"right"}><Badge colorScheme='yellow'>Pending</Badge></Td>
+                            <Td isNumeric>25.4</Td>
                             <Td isNumeric>25.4</Td>
                         </Tr>
                         <Tr>
@@ -341,12 +377,14 @@ const DAO = () => {
                             <Td textAlign={"right"}>Loan for Farmer</Td>
                             <Td textAlign={"right"}><Badge colorScheme='green'>Success</Badge></Td>
                             <Td textAlign={"right"}>30.48</Td>
+                            <Td textAlign={"right"}>30.48</Td>
                         </Tr>
                         <Tr>
                             <Td ><Link to="/dao/343/343">0x10AbbDc83...CBa</Link></Td>
                             <Td>Aryan Vigyat</Td>
                             <Td textAlign={"right"}>Loan for VIT</Td>
                             <Td textAlign={"right"}><Badge colorScheme='red'>Expired</Badge></Td>
+                            <Td textAlign={"right"}>0.91444</Td>
                             <Td textAlign={"right"}>0.91444</Td>
                         </Tr>
                     </Tbody>

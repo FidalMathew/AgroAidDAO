@@ -87,7 +87,7 @@ const Proposal = () => {
     return (
         <>
             <Navbar />
-            <Box mt="6">
+            <Box mt="6" mb="6">
                 <VStack spacing="10">
                     <VStack>
                         <Heading>Proposal Title</Heading>
@@ -125,17 +125,9 @@ const Proposal = () => {
                             </PieChart>
                         </Box>
                         <VStack spacing="6">
-                            <HStack w="xs">
-                                <SimpleGrid border="1px" w="full" p="5" rounded="md" columns={{ base: 1 }} spacing={"2"}>
-                                    <Text fontSize="sm" fontWeight={"semibold"}>Status</Text>
-
-                                    <PulseComponent status={"pending"} />
-                                </SimpleGrid>
-                                <SimpleGrid border="1px" p="5" w="full" rounded="md" columns={{ base: 1 }} spacing={"2"} mb="5">
-                                    <Text fontSize="sm" fontWeight={"semibold"}>Time Left</Text>
-                                    <Heading fontSize={"2xl"}>10 mins</Heading>
-
-                                </SimpleGrid>
+                            <HStack>
+                                <StatsCard title={'Amount Requested'} stat={'10 ETH'} />
+                                <StatsCard title={'Time left'} stat={'10 mins'} />
                             </HStack>
                             <Box border={"1px"} rounded={"xl"} >
                                 <Heading size={"md"} textAlign={"center"} p="3">Voting Details</Heading>
@@ -150,7 +142,19 @@ const Proposal = () => {
                         </VStack>
                         <Stack spacing="5" height="full" border={"1px"} rounded={"xl"} p="5" maxW="4xl">
                             <Heading pb="5" size={"md"} textAlign={"center"}>Voting Options</Heading>
-                            <StatsCard title={'DAO Tokens'} stat={'10 AGRO'} />
+
+                            <HStack w="xs">
+                                <SimpleGrid border="1px" w="full" p="5" rounded="md" columns={{ base: 1 }} spacing={"2"}>
+                                    <Text fontSize="sm" fontWeight={"semibold"}>Status</Text>
+
+                                    <PulseComponent status={"pending"} />
+                                </SimpleGrid>
+                                <SimpleGrid border="1px" p="5" w="full" rounded="md" columns={{ base: 1 }} spacing={"2"} mb="5">
+                                    <Text fontSize="sm" fontWeight={"semibold"}>Time Left</Text>
+                                    <Heading fontSize={"2xl"}>10 mins</Heading>
+
+                                </SimpleGrid>
+                            </HStack>
                             <Stack w="xs" h='full' direction={{ base: "column" }} spacing={{ base: 5, sm: 10 }} m="5" >
                                 <Button rightIcon={<CheckIcon />} colorScheme="teal" variant="outline" size="md" w="full" mx={'auto'}>Vote In favour</Button>
                                 <Button rightIcon={<CloseIcon color={"red.300"} />} colorScheme="teal" variant="outline" size="md" w="full" mx={'auto'}>Vote Against</Button>

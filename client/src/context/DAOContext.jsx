@@ -11,27 +11,27 @@ const DAOContextprovider = ({ children }) => {
 
     const [currentAccount, setCurrentAccount] = useState("")
     const [errorPage, setErrorPage] = useState(false)
-    const contractAddress = "0x2B4D4F41Ca3854963D24B8a835FB36B710d889B6"
-    const [votingSystemContract, setVotingSystemContract] = useState("");
+    const contractAddress = "0x4E21bC5E5D3FeCc1D55C40fCc6162a1EFB751B73"
+    const [daoContract, setdaoContract] = useState("");
 
     const { ethereum } = window;
-    
-    console.log(AgroDAOabi)
+
+    const getContract = async () => {
+
+        const provider = new ethers.BrowserProvider(ethereum);
+
+        const signer = await provider.getSigner();
+
+        const AgridaoContract = new ethers.Contract(contractAddress, AgroDAOabi, signer);
+        AgridaoContract.getDAOBalance().then((res)=> {
+            console.log("res ", Number(res));
+        }).catch(err=>console.log(err))
+        setdaoContract(AgridaoContract)
+        console.log("AgridaoContract ", AgridaoContract)
+    }
+
     useEffect(() => {
-
-        const getContract = () => {
-
-            const provider = new ethers.BrowserProvider(ethereum);
-            
-            const signer = provider.getSigner();
-            
-            const votSysContract = new ethers.Contract(contractAddress, AgroDAOabi, signer);
-            console.log(votSysContract);
-            // // console.log("Voting System Contract: ", votSysContract  )
-            // setVotingSystemContract(votSysContract);
-        }
-
-        if (ethereum){
+        if (ethereum) {
             getContract();
         }
     }, [ethereum, AgroDAOabi])
@@ -43,11 +43,9 @@ const DAOContextprovider = ({ children }) => {
             ethereum.on("accountsChanged", (accounts) => {
                 setCurrentAccount(accounts[0]);
             })
-            
         }
         else
-        console.log("No metamask!");
-        
+            console.log("No metamask!");
         // console.log("DAsad ", currentAccount);
         return () => {
             // ethereum.removeListener('accountsChanged');
@@ -72,11 +70,7 @@ const DAOContextprovider = ({ children }) => {
                 if (accounts.length !== 0) {
                     const account = accounts[0];
                     console.log("Found an authorized account:", account);
-                    // if (currentAccount !== "")
                     setCurrentAccount(account)
-
-                    // votingSystem();
-
                 }
                 else {
                     setCurrentAccount("")
@@ -101,7 +95,7 @@ const DAOContextprovider = ({ children }) => {
         }
 
         checkIfWalletIsConnected();
-    }, [currentAccount, AgroDAOabi , ethereum])
+    }, [currentAccount, AgroDAOabi, ethereum])
 
 
     const connectWallet = () => {
@@ -154,7 +148,7 @@ const DAOContextprovider = ({ children }) => {
 
 
     return (
-        <DAOContext.Provider value={{ connectWallet, currentAccount, switchNetwork, disconnectWallet }}>
+        <DAOContext.Provider value={{ connectWallet, currentAccount, switchNetwork, disconnectWallet, daoContract }}>
             {children}
         </DAOContext.Provider>
     )
