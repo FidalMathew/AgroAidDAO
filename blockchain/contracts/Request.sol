@@ -44,7 +44,10 @@ contract APIConsumer is ChainlinkClient, ConfirmedOwner {
      * Create a Chainlink request to retrieve API response, find the target
      * data, then multiply by 1000000000000000000 (to remove decimal places from data).
      */
-    function requestVolumeData() public returns (bytes32 requestId) {
+    function requestVolumeData(
+        string memory _longitude,
+        string memory _latitude
+    ) public returns (bytes32 requestId) {
         Chainlink.Request memory req = buildChainlinkRequest(
             jobId,
             address(this),
@@ -52,22 +55,19 @@ contract APIConsumer is ChainlinkClient, ConfirmedOwner {
         );
 
         // Set the URL to perform the GET request on
-        req.add(
-            "get",
-            "https://api.open-meteo.com/v1/forecast?latitude=52.52&longitude=13.41&current_weather=true"
+        // Set the URL to perform the GET request on
+        string memory url = string(
+            abi.encodePacked(
+                "https://api.open-meteo.com/v1/forecast?latitude=",
+                _latitude,
+                "&longitude=",
+                _longitude,
+                "&current_weather=true"
+            )
         );
 
-        // Set the path to find the desired data in the API response, where the response format is:
-        // {"RAW":
-        //   {"ETH":
-        //    {"USD":
-        //     {
-        //      "VOLUME24HOUR": xxx.xxx,
-        //     }
-        //    }
-        //   }
-        //  }
-        // request.add("path", "RAW.ETH.USD.VOLUME24HOUR"); // Chainlink nodes prior to 1.0.0 support this format
+        req.add("get", url);
+
         req.add("path", "current_weather,temperature"); // Chainlink nodes 1.0.0 and later support this format
 
         // Multiply the result by 1000000000000000000 to remove decimals
