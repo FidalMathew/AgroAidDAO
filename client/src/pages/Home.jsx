@@ -1,4 +1,4 @@
-import { Container, chakra, Stack, Text, Button, Box, Heading, Image, FormControl, FormLabel, HStack, NumberInput, NumberInputField, NumberInputStepper, NumberIncrementStepper, Input, Textarea, Checkbox, Flex, useColorModeValue } from '@chakra-ui/react';
+import { Container, chakra, Stack, Text, Button, Box, Heading, Image, FormControl, FormLabel, HStack, NumberInputField, NumberInputStepper, NumberIncrementStepper, Input, Textarea, Checkbox, Flex, useColorModeValue, VStack, FormErrorMessage, Card, CardBody } from '@chakra-ui/react';
 import Navbar from "../components/Navbar"
 import CardComponent from "../components/Cardcomponent"
 import { FaGithub } from 'react-icons/fa';
@@ -21,43 +21,34 @@ const Home = () => {
     return (
         <>
             <Flex w="100vw" h="100vh">
-                <Box>
-                    <Image src="/pics/farmerimg.jpg" alt="farmer" height={"full"} fit={"cover"} />
+                <Box h="100vh" w="50%" bg="#A4D79E">
+                    <Image src="/pics/farmerbg.png" h="100vh" w="100%" fit={"cover"} />
                 </Box>
-                <HStack
-                    spacing={"10"}
-                    rounded={'lg'}
-                    bg={useColorModeValue('white', 'gray.700')}
-                    boxShadow={'lg'}
-                    p={8}>
-                    <Stack spacing={4}>
-                        <FormControl id="email">
-                            <FormLabel>Email address</FormLabel>
-                            <Input type="email" />
-                        </FormControl>
-                        <FormControl id="password">
-                            <FormLabel>Password</FormLabel>
-                            <Input type="password" />
-                        </FormControl>
-                        <Stack spacing={10}>
-                            <Stack
-                                direction={{ base: 'column', sm: 'row' }}
-                                align={'start'}
-                                justify={'space-between'}>
-                                <Checkbox>Remember me</Checkbox>
-                                <Link color={'blue.400'}>Forgot password?</Link>
-                            </Stack>
+                <VStack w="50%" h="100vh" p="10">
+                    {/* form */}
+                    <Text
+                        bgGradient='linear(to-l,  #A4D79E, #357945)'
+                        bgClip='text'
+                        fontSize='5xl'
+                        fontWeight='extrabold'
+                        height="30%"
+                    >
+                        Welcome to AgriDAO
+                    </Text>
+                    <Card w="100%" m="auto" p="10">
+                        <CardBody>
                             <Button
-                                bg={'blue.400'}
-                                color={'white'}
-                                _hover={{
-                                    bg: 'blue.500',
-                                }}>
-                                Sign in
+                                width="full"
+                                mt={4}
+                                loadingText="Submitting"
+                                colorScheme="teal"
+                                type="submit"
+                            >
+                                Join DAO
                             </Button>
-                        </Stack>
-                    </Stack>
-                </HStack>
+                        </CardBody>
+                    </Card>
+                </VStack>
             </Flex>
         </>
     )
