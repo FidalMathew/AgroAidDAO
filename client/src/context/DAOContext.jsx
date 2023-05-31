@@ -4,6 +4,7 @@ import AgroDAOabi from "../utils/AgroDAO.json"
 import { ethers } from "ethers";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@chakra-ui/react";
+import { useAddress } from "@thirdweb-dev/react";
 
 export const DAOContext = createContext();
 
@@ -23,7 +24,7 @@ const DAOContextprovider = ({ children }) => {
 
     const getContract = async () => {
 
-        const provider = new ethers.BrowserProvider(ethereum);
+        const provider = new ethers.BrowserProvider(window.ethereum);
 
         const signer = await provider.getSigner();
 
@@ -42,66 +43,66 @@ const DAOContextprovider = ({ children }) => {
     }, [ethereum, AgroDAOabi])
 
 
-    useEffect(() => {
+    // useEffect(() => {
 
-        if (ethereum) {
-            ethereum.on("accountsChanged", (accounts) => {
-                setCurrentAccount(accounts[0]);
-            })
-        }
-        else
-            console.log("No metamask!");
-        // console.log("DAsad ", currentAccount);
-        return () => {
-            // ethereum.removeListener('accountsChanged');
+    //     if (ethereum) {
+    //         ethereum.on("accountsChanged", (accounts) => {
+    //             setCurrentAccount(accounts[0]);
+    //         })
+    //     }
+    //     else
+    //         console.log("No metamask!");
+    //     // console.log("DAsad ", currentAccount);
+    //     return () => {
+    //         // ethereum.removeListener('accountsChanged');
 
-        }
-    }, [ethereum])
+    //     }
+    // }, [ethereum])
 
-    useEffect(() => {
-        const checkIfWalletIsConnected = async () => {
+    // useEffect(() => {
+    //     const checkIfWalletIsConnected = async () => {
 
-            try {
+    //         try {
 
-                if (!ethereum) {
-                    console.log("Metamask not found")
-                    return;
-                }
-                else
-                    console.log("we have ethereum object");
+    //             if (!ethereum) {
+    //                 console.log("Metamask not found")
+    //                 return;
+    //             }
+    //             else
+    //                 console.log("we have ethereum object");
 
-                const accounts = await ethereum.request({ method: "eth_accounts" });  //check if there are accounts connected to the site
+    //             const accounts = await ethereum.request({ method: "eth_accounts" });  //check if there are accounts connected to the site
 
-                if (accounts.length !== 0) {
-                    const account = accounts[0];
-                    console.log("Found an authorized account:", account);
-                    setCurrentAccount(account)
-                }
-                else {
-                    setCurrentAccount("")
-                    console.log("No authorized accounts found!");
-                    navigate('/connectwallet')
-                }
-
-
-                const curr_chainId = await ethereum.request({ method: 'eth_chainId' });
-                setChainId(curr_chainId)
-
-                ethereum.on('chainChanged', handleChainChanged);
+    //             if (accounts.length !== 0) {
+    //                 const account = accounts[0];
+    //                 console.log("Found an authorized account:", account);
+    //                 setCurrentAccount(account)
+    //             }
+    //             else {
+    //                 setCurrentAccount("")
+    //                 console.log("No authorized accounts found!");
+    //                 navigate('/connectwallet')
+    //             }
 
 
-                // Reload the page when they change networks
-                function handleChainChanged(_chainId) {
-                    window.location.reload();
-                }
+    //             const curr_chainId = await ethereum.request({ method: 'eth_chainId' });
+    //             setChainId(curr_chainId)
 
-            } catch (error) {
-                console.log(error);
-            }
-        }
+    //             ethereum.on('chainChanged', handleChainChanged);
 
-        checkIfWalletIsConnected();
-    }, [currentAccount, AgroDAOabi, ethereum])
+
+    //             // Reload the page when they change networks
+    //             function handleChainChanged(_chainId) {
+    //                 window.location.reload();
+    //             }
+
+    //         } catch (error) {
+    //             console.log(error);
+    //         }
+    //     }
+
+    //     checkIfWalletIsConnected();
+    // }, [currentAccount, AgroDAOabi, ethereum])
 
 
     const connectWallet = () => {
@@ -148,17 +149,21 @@ const DAOContextprovider = ({ children }) => {
         }
     }
 
-    useEffect(() => {
+    // useEffect(() => {
 
-        if (chainId !== "0x13881" || !currentAccount) {
-            switchNetwork();
-            setErrorPage(true)
-        }
-        else {
-            setErrorPage(false)
-        }
+    //     if (chainId !== "0x13881" || !currentAccount) {
+    //         switchNetwork();
+    //         setErrorPage(true)
+    //     }
+    //     else {
+    //         setErrorPage(false)
+    //     }
 
-    }, [chainId, currentAccount])
+    // }, [chainId, currentAccount])
+
+    // const disconnectWallet = () => {
+    //     // setCurrentAccount("");
+    // };
 
     useEffect(() => {
         if (currentAccount === undefined) {
