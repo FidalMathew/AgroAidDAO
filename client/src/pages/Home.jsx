@@ -11,7 +11,7 @@ import useCurrentLocation from '../hooks/useCurrentLocation';
 import { LockIcon } from '@chakra-ui/icons';
 
 const Home = () => {
-    const { currentAccount, joinLoading, joinDAO } = useGlobalContext()
+    const { currentAccount, joinLoading, join } = useGlobalContext()
     const navigate = useNavigate()
 
 
@@ -21,7 +21,7 @@ const Home = () => {
         }
     }, [currentAccount])
 
-    const { latitude, longitude } = useCurrentLocation()
+    const { latitude, longitude ,country} = useCurrentLocation()
 
     // console log the current location
     useEffect(() => {
@@ -67,7 +67,7 @@ const Home = () => {
                                     }
                                     console.log(data, 'data')
                                     action.resetForm()
-                                    joinDAO(latitude, longitude, values.name)
+                                    join(latitude, longitude, values.name)
                                     // navigate("/dao")
                                 }}>
                                 {
@@ -90,13 +90,13 @@ const Home = () => {
                                                 <HStack p="2" mt="3">
                                                     <Icon as={CiLocationOn} />
                                                     <FormHelperText>
-                                                        Latitude: <chakra.span fontWeight={"semibold"}>{latitude}</chakra.span>{" "}
-                                                        Longitude:<chakra.span fontWeight={"semibold"}> {longitude}</chakra.span>
+                                                        Location: <chakra.span fontWeight={"semibold"}>{country}</chakra.span>
                                                     </FormHelperText>
                                                 </HStack>
                                             </FormControl>
                                             <Button
                                                 width="full"
+                                                isLoading={joinLoading}
                                                 mt={4}
                                                 loadingText="Submitting"
                                                 colorScheme="teal"

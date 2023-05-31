@@ -4,7 +4,6 @@ import AgroDAOabi from "../utils/AgroDAO.json"
 import { ethers } from "ethers";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@chakra-ui/react";
-import { useAddress } from "@thirdweb-dev/react";
 
 export const DAOContext = createContext();
 
@@ -13,7 +12,7 @@ const DAOContextprovider = ({ children }) => {
     const [chainId, setChainId] = useState("")
     const [currentAccount, setCurrentAccount] = useState("")
     const [errorPage, setErrorPage] = useState(false)
-    const contractAddress = "0x3cE9Ab3685e9B2e4C206848a6D722801Daee31dA"
+    const contractAddress = "0x9FbE3785Ff2B6EE0C564503198229082c0C2f0F6"
     const [daoContract, setdaoContract] = useState("");
 
     const { ethereum } = window;
@@ -24,11 +23,10 @@ const DAOContextprovider = ({ children }) => {
 
     const getContract = async () => {
 
-        const provider = new ethers.BrowserProvider(window.ethereum);
-
-        const signer = await provider.getSigner();
-
+        const provider = new ethers.providers.Web3Provider(ethereum);
+        const signer = provider.getSigner();
         const AgridaoContract = new ethers.Contract(contractAddress, AgroDAOabi, signer);
+
         AgridaoContract.getDAOBalance().then((res) => {
             console.log("res ", Number(res));
         }).catch(err => console.log(err))
@@ -43,66 +41,66 @@ const DAOContextprovider = ({ children }) => {
     }, [ethereum, AgroDAOabi])
 
 
-    // useEffect(() => {
+    useEffect(() => {
 
-    //     if (ethereum) {
-    //         ethereum.on("accountsChanged", (accounts) => {
-    //             setCurrentAccount(accounts[0]);
-    //         })
-    //     }
-    //     else
-    //         console.log("No metamask!");
-    //     // console.log("DAsad ", currentAccount);
-    //     return () => {
-    //         // ethereum.removeListener('accountsChanged');
+        if (ethereum) {
+            ethereum.on("accountsChanged", (accounts) => {
+                setCurrentAccount(accounts[0]);
+            })
+        }
+        else
+            console.log("No metamask!");
+        // console.log("DAsad ", currentAccount);
+        return () => {
+            // ethereum.removeListener('accountsChanged');
 
-    //     }
-    // }, [ethereum])
+        }
+    }, [ethereum])
 
-    // useEffect(() => {
-    //     const checkIfWalletIsConnected = async () => {
+    useEffect(() => {
+        const checkIfWalletIsConnected = async () => {
 
-    //         try {
+            try {
 
-    //             if (!ethereum) {
-    //                 console.log("Metamask not found")
-    //                 return;
-    //             }
-    //             else
-    //                 console.log("we have ethereum object");
+                if (!ethereum) {
+                    console.log("Metamask not found")
+                    return;
+                }
+                else
+                    console.log("we have ethereum object");
 
-    //             const accounts = await ethereum.request({ method: "eth_accounts" });  //check if there are accounts connected to the site
+                const accounts = await ethereum.request({ method: "eth_accounts" });  //check if there are accounts connected to the site
 
-    //             if (accounts.length !== 0) {
-    //                 const account = accounts[0];
-    //                 console.log("Found an authorized account:", account);
-    //                 setCurrentAccount(account)
-    //             }
-    //             else {
-    //                 setCurrentAccount("")
-    //                 console.log("No authorized accounts found!");
-    //                 navigate('/connectwallet')
-    //             }
-
-
-    //             const curr_chainId = await ethereum.request({ method: 'eth_chainId' });
-    //             setChainId(curr_chainId)
-
-    //             ethereum.on('chainChanged', handleChainChanged);
+                if (accounts.length !== 0) {
+                    const account = accounts[0];
+                    console.log("Found an authorized account:", account);
+                    setCurrentAccount(account)
+                }
+                else {
+                    setCurrentAccount("")
+                    console.log("No authorized accounts found!");
+                    navigate('/connectwallet')
+                }
 
 
-    //             // Reload the page when they change networks
-    //             function handleChainChanged(_chainId) {
-    //                 window.location.reload();
-    //             }
+                const curr_chainId = await ethereum.request({ method: 'eth_chainId' });
+                setChainId(curr_chainId)
 
-    //         } catch (error) {
-    //             console.log(error);
-    //         }
-    //     }
+                ethereum.on('chainChanged', handleChainChanged);
 
-    //     checkIfWalletIsConnected();
-    // }, [currentAccount, AgroDAOabi, ethereum])
+
+                // Reload the page when they change networks
+                function handleChainChanged(_chainId) {
+                    window.location.reload();
+                }
+
+            } catch (error) {
+                console.log(error);
+            }
+        }
+
+        checkIfWalletIsConnected();
+    }, [currentAccount, AgroDAOabi, ethereum])
 
 
     const connectWallet = () => {
@@ -149,29 +147,17 @@ const DAOContextprovider = ({ children }) => {
         }
     }
 
-    // useEffect(() => {
-
-    //     if (chainId !== "0x13881" || !currentAccount) {
-    //         switchNetwork();
-    //         setErrorPage(true)
-    //     }
-    //     else {
-    //         setErrorPage(false)
-    //     }
-
-    // }, [chainId, currentAccount])
-
-    // const disconnectWallet = () => {
-    //     // setCurrentAccount("");
-    // };
-
     useEffect(() => {
-        if (currentAccount === undefined) {
-            navigate("/connectwallet")
-        } else {
-            navigate("/")
+
+        if (chainId !== "0x13881" || !currentAccount) {
+            switchNetwork();
+            setErrorPage(true)
         }
-    }, [])
+        else {
+            setErrorPage(false)
+        }
+
+    }, [chainId, currentAccount])
 
     const disconnectWallet = () => {
         // setCurrentAccount("");
@@ -179,10 +165,12 @@ const DAOContextprovider = ({ children }) => {
 
     const [joinLoading, setJoinLoading] = useState(false);
 
-    const joinDAO = async (lat, long, name) => {
+    const join = async (lat, long, name) => {
+        setJoinLoading(true);
         try {
-            setJoinLoading(true);
-            const transaction = await daoContract.joinDAO(lat, long, name);
+            const transaction = await daoContract.joinDAO(lat, long, name, {
+                value: ethers.utils.parseEther('0.01')
+            });
             await transaction.wait();
             console.log(transaction, 'transaction')
             toast({
@@ -203,7 +191,7 @@ const DAOContextprovider = ({ children }) => {
                 isClosable: true,
             });
         } finally {
-            setJoinLoading(false); 
+            setJoinLoading(false);
         }
     };
 
@@ -213,7 +201,7 @@ const DAOContextprovider = ({ children }) => {
 
 
     return (
-        <DAOContext.Provider value={{ joinDAO, joinLoading,connectWallet, currentAccount, switchNetwork, disconnectWallet, daoContract }}>
+        <DAOContext.Provider value={{ connectWallet, currentAccount, switchNetwork, disconnectWallet, daoContract, join, joinLoading }}>
             {children}
         </DAOContext.Provider>
     )

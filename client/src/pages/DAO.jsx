@@ -30,7 +30,7 @@ import * as Yup from 'yup';
 import { useState } from "react";
 import useContract from "../hooks/useContract";
 import useGlobalContext from "../hooks/useGlobalContext";
-
+import { ethers } from "ethers";
 const notifications = [
     {
         notification: `<p style="font-size: medium;"><span style="font-weight: 600;font-size: medium;">Dan Abrahmov's</span> paid 1 ETH</p>`,
@@ -96,12 +96,16 @@ const DAO = () => {
     const [totalProposal, setTotalProposal] = useState(0);
     // total members
     const [totalMembers, setTotalMembers] = useState(0);
-    
+    const [members, setMembers] = useState([])
+
+    useEffect(() => {
+        console.log(members[0], 'members')
+    }, [members])
 
     useEffect(() => {
         if (daoContract) {
             daoContract.getDAOBalance().then((res) => {
-                setDaoBalance(Number(res));
+                setDaoBalance(ethers.utils.formatEther((res)));
             }).catch(err => console.log(err))
 
             daoContract.contractTokenBalance().then((res) => {
@@ -115,6 +119,33 @@ const DAO = () => {
             daoContract.TotalMembers().then((res) => {
                 setTotalMembers(Number(res));
             }).catch(err => console.log(err))
+
+            // daoContract.members.entries().map(([address, farmer]) => ({
+            //     address,
+            //     loan: farmer.loan,
+            //     longitude: farmer.longitude,
+            //     latitude: farmer.latitude,
+            //     reputation: farmer.reputation,
+            //     name: farmer.name,
+            //     timestamp: farmer.timestamp,
+            // })).then(res=> {
+            //     console.log(res)
+            //     setMembers(res)
+            // }).catch(err=>console.log(err))
+
+            daoContract.getMemberAddresses().then(async (res) => {
+                const memberValues = [];
+                for (let i = 0; i < res.length; i++) {
+                    const memberAddress = res[i];
+                    const memberValue = await daoContract.members(memberAddress);
+                    memberValues.push(memberValue);
+                }
+                setMembers(memberValues);
+                console.log("Members: ", memberValues);
+            }).catch((err) => {
+                console.log(err);
+            });
+
         }
     }, [daoContract])
 
@@ -148,34 +179,37 @@ const DAO = () => {
             </HStack>
             <Flex justifyContent={"center"} w="100vw" m="auto" flexDir={{ base: "column", sm: "row" }} alignItems={"center"} p={{ base: 5, md: 10 }}>
                 {/* members */}
-                <VStack maxH="71vh" overflowY="scroll" className="members-list" minW="xs" border="1px solid" borderColor="gray.400" rounded="md" spacing={0} display={{ base: "none", lg: "flex" }}>
+                <VStack minH="70vh" maxH="700vh" minW="50vw" overflowY="scroll" className="members-list" minW="xs" border="1px solid" borderColor="gray.400" rounded="md" spacing={0} display={{ base: "none", lg: "flex" }}>
                     <Heading size="sm" p={4}>Members</Heading>
-                    {articles.map((article, index) => (
+                    {members.map((article, index) => (
                         <Fragment key={index}>
-                            <Box
-                                w="100%"
-                                p={{ base: 2, sm: 4 }}
-                                gap={3}
-                                alignItems="center"
-                            // _hover={{ bg: useColorModeValue('gray.200', 'gray.700') }}
-                            >
-
-                                <Center flexDirection={"column"}>
-                                    <chakra.h3 isExternal fontWeight="bold" fontSize="lg">
-                                        {article.title}
-                                    </chakra.h3>
-                                    <chakra.p
-                                        fontWeight="medium"
-                                        fontSize="sm"
-                                        color={useColorModeValue('gray.600', 'gray.300')}
-                                    >
-                                        Joined: {article.created_at}
-                                    </chakra.p>
-                                </Center>
-                            </Box>
+                            {typeof article === 'object' ? (
+                                <Box
+                                    w="100%"
+                                    p={{ base: 2, sm: 4 }}
+                                    gap={3}
+                                    alignItems="center"
+                                >
+                                    <Center flexDirection="column">
+                                        <chakra.h3 fontWeight="bold" fontSize="lg">
+                                            {article.name} {/* Access the address value */}
+                                        </chakra.h3>
+                                        <chakra.p
+                                            fontWeight="medium"
+                                            fontSize="sm"
+                                            color={useColorModeValue('gray.600', 'gray.300')}
+                                        >
+                                            Address: {article.farmerAddress.toString().slice(0,5) + "..." + article.farmerAddress.toString().slice(-4)} {/* Access the loan value */}
+                                        </chakra.p>
+                                    </Center>
+                                </Box>
+                            ) : null}
                             {articles.length - 1 !== index && <Divider m={0} />}
                         </Fragment>
                     ))}
+
+
+
                 </VStack>
                 {/*  */}
 

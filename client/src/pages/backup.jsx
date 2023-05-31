@@ -206,7 +206,7 @@ const backup = () => {
     ))}
 </VStack> */}
             </Flex>
-            
+
 
 
 
@@ -229,6 +229,29 @@ const backup = () => {
                     </CardBody>
                 </Card>
             </HStack>
+
+            <Fragment key={index}>
+                <Box
+                    w="100%"
+                    p={{ base: 2, sm: 4 }}
+                    gap={3}
+                    alignItems="center"
+                >
+                    <Center flexDirection="column">
+                        <chakra.h3 fontWeight="bold" fontSize="lg">
+                            {article[6]} {/* Access the name value */}
+                        </chakra.h3>
+                        <chakra.p
+                            fontWeight="medium"
+                            fontSize="sm"
+                            color={useColorModeValue('gray.600', 'gray.300')}
+                        >
+                            Address: {article[0]} {/* Access the address value */}
+                        </chakra.p>
+                    </Center>
+                </Box>
+                {articles.length - 1 !== index && <Divider m={0} />}
+            </Fragment>
         </div>
     )
 }
