@@ -12,14 +12,14 @@ const DAOContextprovider = ({ children }) => {
     const [chainId, setChainId] = useState("")
     const [currentAccount, setCurrentAccount] = useState("")
     const [errorPage, setErrorPage] = useState(false)
-    const contractAddress = "0x4E21bC5E5D3FeCc1D55C40fCc6162a1EFB751B73"
+    const contractAddress = "0x3cE9Ab3685e9B2e4C206848a6D722801Daee31dA"
     const [daoContract, setdaoContract] = useState("");
 
     const { ethereum } = window;
     const navigate = useNavigate()
     const toast = useToast()
 
-    
+
 
     const getContract = async () => {
 
@@ -28,9 +28,9 @@ const DAOContextprovider = ({ children }) => {
         const signer = await provider.getSigner();
 
         const AgridaoContract = new ethers.Contract(contractAddress, AgroDAOabi, signer);
-        AgridaoContract.getDAOBalance().then((res)=> {
+        AgridaoContract.getDAOBalance().then((res) => {
             console.log("res ", Number(res));
-        }).catch(err=>console.log(err))
+        }).catch(err => console.log(err))
         setdaoContract(AgridaoContract)
         console.log("AgridaoContract ", AgridaoContract)
     }
@@ -160,16 +160,55 @@ const DAOContextprovider = ({ children }) => {
 
     }, [chainId, currentAccount])
 
+    useEffect(() => {
+        if (currentAccount === undefined) {
+            navigate("/connectwallet")
+        } else {
+            navigate("/")
+        }
+    }, [])
+
     const disconnectWallet = () => {
         // setCurrentAccount("");
+    };
+
+    const [joinLoading, setJoinLoading] = useState(false);
+
+    const joinDAO = async (lat, long, name) => {
+        try {
+            setJoinLoading(true);
+            const transaction = await daoContract.joinDAO(lat, long, name);
+            await transaction.wait();
+            console.log(transaction, 'transaction')
+            toast({
+                title: "Joined DAO.",
+                description: "You can now use the app.",
+                status: "success",
+                duration: 9000,
+                isClosable: true,
+            });
+            navigate("/dao");
+        } catch (error) {
+            console.log(error);
+            toast({
+                title: "Error joining DAO.",
+                description: "Please try again.",
+                status: "error",
+                duration: 9000,
+                isClosable: true,
+            });
+        } finally {
+            setJoinLoading(false); 
+        }
     };
 
 
 
 
 
+
     return (
-        <DAOContext.Provider value={{ connectWallet, currentAccount, switchNetwork, disconnectWallet, daoContract }}>
+        <DAOContext.Provider value={{ joinDAO, joinLoading,connectWallet, currentAccount, switchNetwork, disconnectWallet, daoContract }}>
             {children}
         </DAOContext.Provider>
     )

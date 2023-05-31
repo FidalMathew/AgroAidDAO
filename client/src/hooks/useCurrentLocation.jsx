@@ -31,7 +31,7 @@ const useCurrentLocation = () => {
     const fetchData = async () => {
 
         if (latitude && longitude) {
-            console.log(latitude + ' ' + longitude)
+            // console.log(latitude + ' ' + longitude)
             try {
                 const response = await axios.get(
                     `https://api.opencagedata.com/geocode/v1/json?q=${latitude},+${longitude}&key=${GEOCODING_API_KEY}&language=en&pretty=1`
@@ -46,6 +46,10 @@ const useCurrentLocation = () => {
 
         }
     };
+
+    useEffect(() => {
+        fetchData()
+    }, [latitude, longitude])
 
 
     return {
