@@ -19,76 +19,25 @@ import {
     TableContainer,
     Badge,
     FormErrorMessage,
+    useToast,
 } from "@chakra-ui/react"
 import { Link } from "react-router-dom";
 import Navbar from "../components/Navbar"
 import { Fragment, useEffect } from "react";
-import { GoPrimitiveDot } from 'react-icons/go';
-import { FaRegComment, FaRegHeart, FaRegEye } from 'react-icons/fa';
 import { Field, Formik } from 'formik';
 import * as Yup from 'yup';
 import { useState } from "react";
-import useContract from "../hooks/useContract";
 import useGlobalContext from "../hooks/useGlobalContext";
 import { ethers } from "ethers";
-const notifications = [
-    {
-        notification: `<p style="font-size: medium;"><span style="font-weight: 600;font-size: medium;">Dan Abrahmov's</span> paid 1 ETH</p>`,
-        dateTime: '2 days ago',
-        userName: 'Dan Abrahmov',
-        userAvatar: 'https://bit.ly/dan-abramov',
-        isOnline: true
-    },
-    {
-        notification: `<p style="font-size: medium;"><span style="font-weight: 600;font-size: medium;">Vitalik Buterin</span> joined the DAO</p>`,
-        dateTime: 'yesterday',
-        userName: 'Kent Dodds',
-        userAvatar: 'https://im.indiatimes.in/content/2022/Mar/flickr-etherum-founder_623b07675a7b0.jpg?w=1200&h=900&cc=1',
-        isOnline: true
-    },
-    {
-        notification: `<p style="font-size: medium;"><span style="font-weight: 600;font-size: medium;">Jena Karlis</span> raised a proposal <span style="font-weight: 600">Loan of 1 ETH</span>.</p>`,
-        dateTime: '4 days ago',
-        userName: 'Jena Karlis',
-        userAvatar:
-            'https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&auto=format&fit=crop&w=334&q=80',
-        isOnline: true
-    }
-];
-
-const articles = [
-    {
-        title: 'Fidal Mathew',
-        created_at: '21 Jan 2022',
-    },
-    {
-        title: 'Jaydeep Dey',
-        created_at: '20 Jun 2021',
-
-    },
-    {
-        title: `Aryan Vigyat`,
-        created_at: '31 Sept 2022',
-    },
-    {
-        title: `Prateek Mohanty`,
-        created_at: '31 Sept 2022',
-    },
-    {
-        title: `Spandan Ghosh`,
-        created_at: '31 Sept 2022',
-    }
-
-];
-
 
 const DAO = () => {
+    const toast = useToast()
     const [checked, setChecked] = useState(false)
     useEffect(() => {
         console.log(checked, 'checked')
     }, [checked])
 
-    const { daoContract } = useGlobalContext();
+    const { daoContract, currentAccount } = useGlobalContext();
 
     const [daoBalance, setDaoBalance] = useState(0);
     const [daoToken, setDaoToken] = useState(0);
@@ -174,6 +123,7 @@ const DAO = () => {
                         const proposalId = res[i];
                         const proposalValue = {
                             proposalId: i,
+                            description: proposalId[0],
                             owner: proposalId[1],
                             amount: Number(proposalId[2]),
                             isExecuted: proposalId[3],
@@ -194,6 +144,73 @@ const DAO = () => {
         }
         getAllProposals();
     }, [daoContract, totalProposal])
+
+    const [proposalLoading, setProposalLoading] = useState(false);
+    const CreateProposal = async (desc, amount) => {
+        setProposalLoading(true);
+        try {
+            const transaction = await daoContract.createProposal(desc, amount);
+            await transaction.wait()
+            console.log(transaction, 'proposal transaction')
+            toast({
+                // proposal creation
+                title: "Proposal created.",
+                status: "success",
+                duration: 9000,
+                isClosable: true,
+            });
+        } catch (error) {
+            console.log(error);
+            toast({
+                title: "Error creating proposal.",
+                description: "Please try again.",
+                status: "error",
+                duration: 9000,
+                isClosable: true,
+            });
+        } finally {
+            setProposalLoading(false);
+        }
+    }
+
+    useEffect(() => {
+
+        const onNewProposal = (description, owner, amount, isExecuted, startTime, endTime, votesFor, votesAgainst, voters) => {
+            // console.log("NewCandidate", candAddress, name, proposal, votes);
+            // console.log("Proposal updated successfully",
+            //     description, owner, Number(amount), isExecuted, convertDateAndTime(startTime._hex), convertDateAndTime(endTime._hex), Number(votesFor), Number(votesAgainst), voters
+            // )
+
+            setFetchedProposals(prevState => [
+                ...prevState,
+                {
+                    proposalId: fetchedProposals.length + 1,
+                    description: description,
+                    owner: owner,
+                    amount: Number(amount),
+                    isExecuted: isExecuted,
+                    startTime: convertDateAndTime(startTime._hex),
+                    endTime:  convertDateAndTime(endTime._hex),
+                    votesFor: Number(votesFor),
+                    votesAgainst: Number(votesAgainst),
+                    voters: voters,
+                }
+            ]);
+        };
+
+
+        if (window.ethereum && daoContract) {
+            daoContract.on("ProposalCreated", onNewProposal);
+        }
+
+        return () => {
+            if (daoContract) {
+                daoContract.off("ProposalCreated", onNewProposal);
+            }
+        };
+    }, [daoContract]);
+
+
     return (
         <>
             <Navbar />
@@ -248,7 +265,7 @@ const DAO = () => {
                                     </Center>
                                 </Box>
                             ) : null}
-                            {articles.length - 1 !== index && <Divider m={0} />}
+                            {members.length - 1 !== index && <Divider m={0} />}
                         </Fragment>
                     ))}
 
@@ -265,28 +282,25 @@ const DAO = () => {
                     w="lg"
                     ml={{ base: "auto", md: 10 }}
                     mr={{ base: "auto", md: 10 }}
+                    mt={{ base: 10, lg: 0 }}
                 >
                     <Formik
                         initialValues={{
-                            title: '',
+                            // title: '',
                             description: '',
                             askForPayment: false,
                             amount: 0,
                         }}
 
                         validationSchema={Yup.object({
-                            title: Yup.string().required('Title is required'),
+                            // title: Yup.string().required('Title is required'),
                             description: Yup.string().required('Description is required'),
                             askForPayment: Yup.boolean(),
-                            amount: Yup.number().when('askForPayment', {
-                                is: true,
-                                then: Yup.number().required('Amount is required').min(0.01, 'Amount must be greater than 0.01'),
-                                otherwise: Yup.number(),
-                            }),
+                            amount: Yup.number().required('Amount is required')
                         })}
 
                         onSubmit={(value, action) => {
-                            console.log(value);
+                            CreateProposal(value.description, value.amount);
                             action.resetForm();
                         }}
                     >
@@ -295,15 +309,15 @@ const DAO = () => {
 
                                 <Heading size="md" pb={5} textAlign={"center"}>Create Proposals</Heading>
                                 <Stack spacing={4}>
-                                    <FormControl
+                                    {/* <FormControl
                                         id="title"
                                         isInvalid={formik.errors.title && formik.touched.title}
                                     >
                                         <FormLabel>Title</FormLabel>
                                         <Field name="title" as={Input} placeholder="Enter proposal title" />
                                         <FormErrorMessage fontSize="xs">{formik.errors.title}</FormErrorMessage>
-                                    </FormControl>
-                                    <FormControl id="password"
+                                    </FormControl> */}
+                                    <FormControl id="description"
                                         isInvalid={formik.errors.description && formik.touched.description}
                                     >
                                         <FormLabel>Description</FormLabel>
@@ -365,7 +379,10 @@ const DAO = () => {
                                             color={'white'}
                                             _hover={{
                                                 bg: 'blue.500',
-                                            }}>
+                                            }}
+                                            isLoading={proposalLoading}
+                                            loadingText="Creating Proposal.."
+                                        >
                                             Create Proposal
                                         </Button>
                                     </Stack>
@@ -439,51 +456,24 @@ const DAO = () => {
                     <Thead>
                         <Tr>
                             <Th>Address</Th>
-                            <Th>Name</Th>
-                            <Th isNumeric>Proposal Title</Th>
-                            <Th isNumeric>Status</Th>
-                            <Th textAlign={"right"}>Amount requested</Th>
-                            <Th textAlign={"right"}>DAO Token</Th>
+                            <Th textAlign={"right"}>Status</Th>
+                            <Th textAlign={"right"}>Start time</Th>
+                            <Th textAlign={"right"}>End Time</Th>
                         </Tr>
                     </Thead>
                     <Tbody>
                         {
                             fetchedProposals.map((proposal, index) => (
                                 <Tr key={index}>
-                                    <Td><Link to={`/dao/${proposal.proposalId}`}>{proposal.owner.toString().slice(0, 5) + "..." + proposal.owner.toString().slice(-4)}</Link></Td>
-                                    <Td >{proposal.amount}</Td>
+                                    <Td><Link to={`/proposal/${proposal.proposalId}`} 
+                                        state={{ proposal: proposal }}
+                                    >{proposal.owner.toString().slice(0, 5) + "..." + proposal.owner.toString().slice(-4)}</Link></Td>
+                                    {/* <Td >{proposal.amount}</Td> */}
                                     <Td textAlign={"right"}>{proposal.isExecuted ? <Badge colorScheme='green'>Executed</Badge> : <Badge colorScheme='yellow'>Pending</Badge>}</Td>
                                     <Td textAlign={"right"}>{proposal.startTime}</Td>
                                     <Td textAlign={"right"}>{proposal.endTime}</Td>
-                                    <Td textAlign={"right"}>{proposal.votesFor}</Td>
-                                    <Td textAlign={"right"}>{proposal.votesAgainst}</Td>
-                                    <Td textAlign={"right"}>{proposal.voters}</Td>
                                 </Tr>))
                         }
-                        <Tr>
-                            <Td><Link to="/dao/343/343">0x10AbbDc83...CBa</Link></Td>
-                            <Td >Jaydeep Dey</Td>
-                            <Td textAlign={"right"}>Loan for Education</Td>
-                            <Td textAlign={"right"}><Badge colorScheme='yellow'>Pending</Badge></Td>
-                            <Td isNumeric>25.4</Td>
-                            <Td isNumeric>25.4</Td>
-                        </Tr>
-                        <Tr>
-                            <Td ><Link to="/dao/343/343">0x10AbbDc83...CBa</Link></Td>
-                            <Td >Fidal Mathew</Td>
-                            <Td textAlign={"right"}>Loan for Farmer</Td>
-                            <Td textAlign={"right"}><Badge colorScheme='green'>Success</Badge></Td>
-                            <Td textAlign={"right"}>30.48</Td>
-                            <Td textAlign={"right"}>30.48</Td>
-                        </Tr>
-                        <Tr>
-                            <Td ><Link to="/dao/343/343">0x10AbbDc83...CBa</Link></Td>
-                            <Td>Aryan Vigyat</Td>
-                            <Td textAlign={"right"}>Loan for VIT</Td>
-                            <Td textAlign={"right"}><Badge colorScheme='red'>Expired</Badge></Td>
-                            <Td textAlign={"right"}>0.91444</Td>
-                            <Td textAlign={"right"}>0.91444</Td>
-                        </Tr>
                     </Tbody>
                     {/* <Tfoot>
                         <Tr>

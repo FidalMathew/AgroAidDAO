@@ -18,7 +18,7 @@ function App() {
         <Route path="/location" element={<Location />} />
         <Route path="/profile/:id" element={<Profile />} />
         <Route path="/dao/" element={<DAO />} />
-        <Route path="/dao/:id" element={<Proposal />} />
+        <Route path="/proposal/:id" element={<Proposal />} />
         <Route path="/connectwallet" element={<Connectwallet />} />
         <Route path="/*" element={<Error />} />
       </Routes>

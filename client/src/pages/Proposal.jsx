@@ -1,14 +1,15 @@
 import { Box, Button, Container, HStack, Heading, SimpleGrid, Stack, Stat, StatLabel, StatNumber, Text, VStack, chakra, useColorModeValue } from "@chakra-ui/react"
 import Navbar from "../components/Navbar"
 import { PieChart, Pie, Sector, Cell, ResponsiveContainer, Legend } from 'recharts';
-import { HiOutlineMail } from 'react-icons/hi';
-import { BsArrowUpShort, BsArrowDownShort } from 'react-icons/bs';
-import { AiOutlineLike, AiOutlineEye } from 'react-icons/ai';
 import { CheckIcon, CloseIcon, RepeatClockIcon } from "@chakra-ui/icons";
+import { useLocation } from "react-router-dom";
+import useGlobalContext from "../hooks/useGlobalContext";
+import { useState } from "react";
+import { useEffect } from "react";
 
 const data = [
-    { name: 'Group A', value: 10 },
-    { name: 'Group B', value: 5 },
+    { name: 'Group A', value: 543 },
+    { name: 'Group B', value: 329 },
 ];
 
 const COLORS = ['#0088FE', '#00C49F'].reverse();
@@ -62,28 +63,53 @@ function StatsCard(props) {
 const PulseComponent = ({ status }) => {
     const pulseStyle = {
         display: "block",
+        margin: 0,
         width: "10px",
         height: "10px",
         borderRadius: "50%",
-        background: status === "pending" ? "#cca92c" : status === "completed" && "green",
+        background: status === "pending" ? "#cca92c" : status === "completed" ? "green" : status == "expired" && "red",
         cursor: "pointer",
         boxShadow: "0 0 0 rgba(204,169,44, 0.4)",
         animation: "pulse 2s infinite",
     };
 
     return (
-        <HStack>
-            <Heading fontSize={"2xl"}>{status === "pending" ? "Pending" : status === "completed" && "Completed"}</Heading>
-            <span
+        <HStack spacing="3">
+            <Heading fontSize={"2xl"}>{
+                status === "pending" ? "Pending" : status === "completed" ? "Done" : status == "expired" && "Expired"
+            }</Heading>
+            <chakra.span
                 className="pulse"
                 style={pulseStyle}
-            ></span>
+            ></chakra.span>
         </HStack>
     );
 };
 
 
+
 const Proposal = () => {
+    const { state } = useLocation()
+    const proposal = state.proposal
+
+    const [expired, setExpired] = useState(false);
+    const [timeLeft, setTimeLeft] = useState(0);
+
+    const end = new Date(proposal.endTime)
+    const now = new Date()
+
+    useEffect(() => {
+        if (end < now) {
+            setExpired(true)
+        }
+
+    }, [now])
+
+    console.log(proposal, 'expired')
+
+
+
+
     return (
         <>
             <Navbar />
@@ -91,15 +117,10 @@ const Proposal = () => {
                 <VStack spacing="10">
                     <VStack>
                         <Heading>Proposal Title</Heading>
-                        <Text>initiated by: 0x3434....cBa</Text>
+                        <Text>initiated by: {proposal.owner.toString().slice(0, 5) + "..." + proposal.owner.toString().slice(-4)}</Text>
                         <Text fontSize={"md"} maxW="xl" textAlign={"center"}>
                             {/* Random text of length 50 words */}
-                            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec
-                            vitae diam euismod, tincidunt elit quis, ultricies nisl. Donec
-                            euismod, nisl vitae aliquam ultricies, nunc nisl ultrices
-                            tortor, quis aliquam nisl nunc vel nunc. Donec euismod, nisl
-                            vitae aliquam ultricies, nunc nisl ultrices tortor, quis
-                            aliquam nisl nunc vel nunc. Donec euismod, nisl vitae aliquam
+                            {proposal?.description}
                         </Text>
                     </VStack>
                     <Stack direction={{ base: "column", xl: "row" }} alignItems={"center"} justifyContent={"center"} minW="50vw" spacing="6">
@@ -133,8 +154,8 @@ const Proposal = () => {
                                 <Heading size={"md"} textAlign={"center"} p="3">Voting Details</Heading>
                                 <Box w="xs" mx={'auto'} pt={5} px={{ base: 2, sm: 12, md: 17 }}>
                                     <SimpleGrid columns={{ base: 1 }} spacing={{ base: 5, lg: 8 }} mb="5">
-                                        <StatsCard title={'Voting in-favour'} stat={'10 members'} />
-                                        <StatsCard title={'Voting against'} stat={'5 members'} />
+                                        <StatsCard title={'Voting in-favour'} stat={proposal.votesFor + " Members"} />
+                                        <StatsCard title={'Voting against'} stat={proposal.votesAgainst + " Member"} />
                                         {/* <StatsCard title={'Who speak'} stat={'100 different languages'} /> */}
                                     </SimpleGrid>
                                 </Box>
@@ -143,16 +164,14 @@ const Proposal = () => {
                         <Stack spacing="5" height="full" border={"1px"} rounded={"xl"} p="5" maxW="4xl">
                             <Heading pb="5" size={"md"} textAlign={"center"}>Voting Options</Heading>
 
-                            <HStack w="xs">
+                            <HStack w="xs" m="auto">
                                 <SimpleGrid border="1px" w="full" p="5" rounded="md" columns={{ base: 1 }} spacing={"2"}>
                                     <Text fontSize="sm" fontWeight={"semibold"}>Status</Text>
-
-                                    <PulseComponent status={"pending"} />
+                                    <PulseComponent status={expired ? "completed" : "pending"} />
                                 </SimpleGrid>
-                                <SimpleGrid border="1px" p="5" w="full" rounded="md" columns={{ base: 1 }} spacing={"2"} mb="5">
+                                <SimpleGrid border="1px" p="5" w="full" rounded="md" columns={{ base: 1 }} spacing={"2"}>
                                     <Text fontSize="sm" fontWeight={"semibold"}>Time Left</Text>
                                     <Heading fontSize={"2xl"}>10 mins</Heading>
-
                                 </SimpleGrid>
                             </HStack>
                             <Stack w="xs" h='full' direction={{ base: "column" }} spacing={{ base: 5, sm: 10 }} m="5" >

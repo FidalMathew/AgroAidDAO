@@ -12,7 +12,7 @@ const DAOContextprovider = ({ children }) => {
     const [chainId, setChainId] = useState("")
     const [currentAccount, setCurrentAccount] = useState("")
     const [errorPage, setErrorPage] = useState(false)
-    const contractAddress = "0xdaAFFaefC600dEc270af476Cad4e8a1367cb3b61"
+    const contractAddress = "0xD57949fb4cc3F08E1A5D986A7B882aBF9Ef8df3C"
     const [daoContract, setdaoContract] = useState("");
     const [ethBalance, setEthBalance] = useState(0);
     const { ethereum } = window;
@@ -203,7 +203,7 @@ const DAOContextprovider = ({ children }) => {
             console.log(error);
             toast({
                 title: "Error joining DAO.",
-                description: "Please try again.",
+                description: error.message,
                 status: "error",
                 duration: 9000,
                 isClosable: true,
@@ -212,11 +212,6 @@ const DAOContextprovider = ({ children }) => {
             setJoinLoading(false);
         }
     };
-
-
-
-
-
 
     return (
         <DAOContext.Provider value={{ ethBalance, connectWallet, currentAccount, switchNetwork, disconnectWallet, daoContract, join, joinLoading }}>
