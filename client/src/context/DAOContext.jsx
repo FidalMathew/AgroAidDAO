@@ -12,9 +12,9 @@ const DAOContextprovider = ({ children }) => {
     const [chainId, setChainId] = useState("")
     const [currentAccount, setCurrentAccount] = useState("")
     const [errorPage, setErrorPage] = useState(false)
-    const contractAddress = "0x9FbE3785Ff2B6EE0C564503198229082c0C2f0F6"
+    const contractAddress = "0x9DE16FDB5f63a23E41AD38E4957494363dc844fF"
     const [daoContract, setdaoContract] = useState("");
-
+    const [ethBalance, setEthBalance] = useState(0);
     const { ethereum } = window;
     const navigate = useNavigate()
     const toast = useToast()
@@ -27,12 +27,30 @@ const DAOContextprovider = ({ children }) => {
         const signer = provider.getSigner();
         const AgridaoContract = new ethers.Contract(contractAddress, AgroDAOabi, signer);
 
+
         AgridaoContract.getDAOBalance().then((res) => {
             console.log("res ", Number(res));
         }).catch(err => console.log(err))
         setdaoContract(AgridaoContract)
         console.log("AgridaoContract ", AgridaoContract)
     }
+
+    useEffect(() => {
+        async function fetchEthBalance() {
+            if (window.ethereum) {
+                const provider = new ethers.providers.Web3Provider(window.ethereum);
+                const signer = provider.getSigner();
+                const address = await signer.getAddress();
+                provider.getBalance(currentAccount).then(res => {
+                    const formattedBalance = ethers.utils.formatEther(res);
+                    setEthBalance(formattedBalance)
+                }).catch(err => console.log(err))
+            }
+        }
+
+        fetchEthBalance();
+    }, []);
+
 
     useEffect(() => {
         if (ethereum) {
@@ -201,7 +219,7 @@ const DAOContextprovider = ({ children }) => {
 
 
     return (
-        <DAOContext.Provider value={{ connectWallet, currentAccount, switchNetwork, disconnectWallet, daoContract, join, joinLoading }}>
+        <DAOContext.Provider value={{ ethBalance, connectWallet, currentAccount, switchNetwork, disconnectWallet, daoContract, join, joinLoading }}>
             {children}
         </DAOContext.Provider>
     )

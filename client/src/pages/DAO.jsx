@@ -97,6 +97,7 @@ const DAO = () => {
     // total members
     const [totalMembers, setTotalMembers] = useState(0);
     const [members, setMembers] = useState([])
+    const [fetchedProposals, setFetchedProposals] = useState([])
 
     useEffect(() => {
         console.log(members[0], 'members')
@@ -146,6 +147,17 @@ const DAO = () => {
                 console.log(err);
             });
 
+            daoContract.getAllProposals().then(async (res) => {
+                const proposalValues = [];
+                for (let i = 0; i < res.length; i++) {
+                    const proposalId = res[i];
+                    const proposalValue = await daoContract.proposals(proposalId);
+                    proposalValues.push(proposalValue);
+                }
+                setFetchedProposals(proposalValues);
+                console.log("Proposals: ", proposalValues);
+            })
+
         }
     }, [daoContract])
 
@@ -177,9 +189,9 @@ const DAO = () => {
                     </SimpleGrid>
                 </Box>
             </HStack>
-            <Flex justifyContent={"center"} w="100vw" m="auto" flexDir={{ base: "column", sm: "row" }} alignItems={"center"} p={{ base: 5, md: 10 }}>
+            <Flex justifyContent={"center"} w="100vw" m="auto" flexDir={{ base: "column", lg: "row" }} alignItems={"center"} p={{ base: 5, md: 10 }}>
                 {/* members */}
-                <VStack minH="70vh" maxH="700vh" minW="50vw" overflowY="scroll" className="members-list" minW="xs" border="1px solid" borderColor="gray.400" rounded="md" spacing={0} display={{ base: "none", lg: "flex" }}>
+                <VStack minH="70vh" maxH="700vh" w={{base: "80%", lg: "25vw"}} overflowY="scroll" className="members-list" border="1px solid" borderColor="gray.400" rounded="md" spacing={0} display={"flex"}>
                     <Heading size="sm" p={4}>Members</Heading>
                     {members.map((article, index) => (
                         <Fragment key={index}>

@@ -7,6 +7,7 @@ import Profile from './pages/Profile'
 import Location from './pages/Location'
 import Connectwallet from './pages/Connectwallet'
 import useGlobalContext from './hooks/useGlobalContext'
+import Error from './pages/Error'
 
 function App() {
   
@@ -19,7 +20,7 @@ function App() {
         <Route path="/dao/" element={<DAO />} />
         <Route path="/dao/:id" element={<Proposal />} />
         <Route path="/connectwallet" element={<Connectwallet />} />
-        <Route path="/*" element={<Navigate to="/" replace />} />
+        <Route path="/*" element={<Error />} />
       </Routes>
     </Box>
   )

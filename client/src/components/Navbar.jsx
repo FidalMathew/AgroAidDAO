@@ -37,8 +37,8 @@ export default function Navbar() {
   // console.log(currentAccount, 'accountss')
 
 
-  useEffect(()=> {
-    if(currentAccount===undefined){
+  useEffect(() => {
+    if (currentAccount === undefined) {
       navigate('/')
     }
   }, [])
@@ -87,22 +87,22 @@ export default function Navbar() {
             justify={'flex-end'}
             direction={'row'}
             spacing={6}>
-            {!currentAccount ? 
-            <Button
-              onClick={connectWallet}
-              as={'a'}
-              display={'inline-flex'}
-              fontSize={'sm'}
-              fontWeight={600}
-              color={'white'}
-              bg={'green.400'}
-              href={'#'}
-              _hover={{
-                bg: 'green.300',
-              }}>
-              Connect wallet
-            </Button> 
-            :
+            {!currentAccount ?
+              <Button
+                onClick={connectWallet}
+                as={'a'}
+                display={'inline-flex'}
+                fontSize={'sm'}
+                fontWeight={600}
+                color={'white'}
+                bg={'green.400'}
+                href={'#'}
+                _hover={{
+                  bg: 'green.300',
+                }}>
+                Connect wallet
+              </Button>
+              :
               <Menu>
                 <MenuButton
                   as={Button}
@@ -120,7 +120,7 @@ export default function Navbar() {
                 <MenuList>
                   {/* Add menu items here */}
                   <MenuItem onClick={disconnectWallet}>Disconnect Wallet</MenuItem>
-                  <Link to={`/${currentAccount}`}><MenuItem>Profile</MenuItem></Link>
+                  <Link to={currentAccount && `/profile/${currentAccount}`}><MenuItem>Profile</MenuItem></Link>
                 </MenuList>
               </Menu>
             }
