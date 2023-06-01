@@ -121,18 +121,6 @@ const DAO = () => {
                 setTotalMembers(Number(res));
             }).catch(err => console.log(err))
 
-            // daoContract.members.entries().map(([address, farmer]) => ({
-            //     address,
-            //     loan: farmer.loan,
-            //     longitude: farmer.longitude,
-            //     latitude: farmer.latitude,
-            //     reputation: farmer.reputation,
-            //     name: farmer.name,
-            //     timestamp: farmer.timestamp,
-            // })).then(res=> {
-            //     console.log(res)
-            //     setMembers(res)
-            // }).catch(err=>console.log(err))
 
             daoContract.getMemberAddresses().then(async (res) => {
                 const memberValues = [];
@@ -147,21 +135,65 @@ const DAO = () => {
                 console.log(err);
             });
 
-            daoContract.getAllProposals().then(async (res) => {
-                const proposalValues = [];
-                for (let i = 0; i < res.length; i++) {
-                    const proposalId = res[i];
-                    const proposalValue = await daoContract.proposals(proposalId);
-                    proposalValues.push(proposalValue);
-                }
-                setFetchedProposals(proposalValues);
-                console.log("Proposals: ", proposalValues);
-            })
+
 
         }
     }, [daoContract])
 
+    const convertDateAndTime = (timestamp) => {
+        // Remove the '0x' prefix and convert the hex timestamp to a decimal number
+        const decimalTimestamp = parseInt(timestamp.substring(2), 16);
 
+        // Create a new Date object from the decimal timestamp
+        const date = new Date(decimalTimestamp * 1000);
+
+        // Extract the date and time components
+        const year = date.getFullYear();
+        const month = ('0' + (date.getMonth() + 1)).slice(-2);
+        const day = ('0' + date.getDate()).slice(-2);
+        const hours = ('0' + date.getHours()).slice(-2);
+        const minutes = ('0' + date.getMinutes()).slice(-2);
+        const seconds = ('0' + date.getSeconds()).slice(-2);
+
+        // Format the date and time
+        const formattedDateTime = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+
+        return formattedDateTime;
+    };
+
+    useEffect(() => {
+        const getAllProposals = async () => {
+
+            try {
+
+                if (daoContract) {
+                    const proposalList = [];
+                    const res = await daoContract.getAllProposals()
+
+                    for (let i = 0; i < res.length; i++) {
+                        const proposalId = res[i];
+                        const proposalValue = {
+                            proposalId: i,
+                            owner: proposalId[1],
+                            amount: Number(proposalId[2]),
+                            isExecuted: proposalId[3],
+                            startTime: convertDateAndTime(proposalId[4]._hex),
+                            endTime: convertDateAndTime(proposalId[5]._hex),
+                            votesFor: Number(proposalId[6]),
+                            votesAgainst: Number(proposalId[7]),
+                            voters: proposalId[8],
+                        }
+                        proposalList.push(proposalValue);
+                    }
+                    console.log(proposalList, 'proposalList')
+                    setFetchedProposals(proposalList);
+                }
+            } catch (error) {
+                console.log(error)
+            }
+        }
+        getAllProposals();
+    }, [daoContract, totalProposal])
     return (
         <>
             <Navbar />
@@ -191,7 +223,7 @@ const DAO = () => {
             </HStack>
             <Flex justifyContent={"center"} w="100vw" m="auto" flexDir={{ base: "column", lg: "row" }} alignItems={"center"} p={{ base: 5, md: 10 }}>
                 {/* members */}
-                <VStack minH="70vh" maxH="700vh" w={{base: "80%", lg: "25vw"}} overflowY="scroll" className="members-list" border="1px solid" borderColor="gray.400" rounded="md" spacing={0} display={"flex"}>
+                <VStack minH="70vh" maxH="700vh" w={{ base: "80%", lg: "25vw" }} overflowY="scroll" className="members-list" border="1px solid" borderColor="gray.400" rounded="md" spacing={0} display={"flex"}>
                     <Heading size="sm" p={4}>Members</Heading>
                     {members.map((article, index) => (
                         <Fragment key={index}>
@@ -211,7 +243,7 @@ const DAO = () => {
                                             fontSize="sm"
                                             color={useColorModeValue('gray.600', 'gray.300')}
                                         >
-                                            Address: {article.farmerAddress.toString().slice(0,5) + "..." + article.farmerAddress.toString().slice(-4)} {/* Access the loan value */}
+                                            Address: {article.farmerAddress.toString().slice(0, 5) + "..." + article.farmerAddress.toString().slice(-4)} {/* Access the loan value */}
                                         </chakra.p>
                                     </Center>
                                 </Box>
@@ -403,6 +435,7 @@ const DAO = () => {
                 <Heading size="md" p={4} textAlign={"center"}>Member Record</Heading>
                 <Table variant='simple' mb="6">
                     {/* <TableCaption>Imperial to metric conversion factors</TableCaption> */}
+
                     <Thead>
                         <Tr>
                             <Th>Address</Th>
@@ -414,6 +447,19 @@ const DAO = () => {
                         </Tr>
                     </Thead>
                     <Tbody>
+                        {
+                            fetchedProposals.map((proposal, index) => (
+                                <Tr key={index}>
+                                    <Td><Link to={`/dao/${proposal.proposalId}`}>{proposal.owner.toString().slice(0, 5) + "..." + proposal.owner.toString().slice(-4)}</Link></Td>
+                                    <Td >{proposal.amount}</Td>
+                                    <Td textAlign={"right"}>{proposal.isExecuted ? <Badge colorScheme='green'>Executed</Badge> : <Badge colorScheme='yellow'>Pending</Badge>}</Td>
+                                    <Td textAlign={"right"}>{proposal.startTime}</Td>
+                                    <Td textAlign={"right"}>{proposal.endTime}</Td>
+                                    <Td textAlign={"right"}>{proposal.votesFor}</Td>
+                                    <Td textAlign={"right"}>{proposal.votesAgainst}</Td>
+                                    <Td textAlign={"right"}>{proposal.voters}</Td>
+                                </Tr>))
+                        }
                         <Tr>
                             <Td><Link to="/dao/343/343">0x10AbbDc83...CBa</Link></Td>
                             <Td >Jaydeep Dey</Td>
