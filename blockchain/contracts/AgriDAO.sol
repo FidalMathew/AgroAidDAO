@@ -14,7 +14,9 @@ contract AgroDAO {
     uint256 private constant INITIAL_USER_AMOUNT = 1000;
     uint256 private constant LOAN_TIME = 20 seconds;
     address public agriTokenAddress;
+
     // address public chainLinkAddress;
+    receive() external payable {}
 
     // make a farmers details struct and map it
     struct Farmer {
@@ -24,6 +26,8 @@ contract AgroDAO {
         string longitude;
         string latitude;
         uint256 reputation;
+        string name;
+        uint256 timestamp;
     }
 
     uint256 public a;
@@ -37,7 +41,9 @@ contract AgroDAO {
     mapping(string => string[]) public plantDataSet;
     address[] public daoMembers;
 
-    receive() external payable {}
+    function getMemberAddresses() public view returns (address[] memory) {
+        return daoMembers;
+    }
 
     constructor() payable {
         agriToken = new Token(INITIAL_TOKEN_AMOUNT, address(this));
@@ -73,7 +79,8 @@ contract AgroDAO {
 
     function joinDAO(
         string memory _longitude,
-        string memory _latitude
+        string memory _latitude,
+        string memory name
     ) public payable {
         // check if membership already exists, if not append in mapping
         address user = payable(msg.sender);
@@ -84,7 +91,15 @@ contract AgroDAO {
 
         require(msg.value >= 0.01 ether, "Please send exactly 0.01 ETH");
 
-        members[user] = Farmer(user, 0, _longitude, _latitude, 0);
+        members[user] = Farmer(
+            user,
+            0,
+            _longitude,
+            _latitude,
+            0,
+            name,
+            block.timestamp
+        );
         daoMembers.push(msg.sender);
 
         payable(address(this)).transfer(msg.value);
@@ -139,7 +154,19 @@ contract AgroDAO {
         address[] voters;
     }
 
-    proposal[] proposals;
+    proposal[] public proposals;
+
+    function TotalProposals() public view returns (uint256) {
+        return proposals.length;
+    }
+
+    function TotalMembers() public view returns (uint256) {
+        return daoMembers.length;
+    }
+
+    function getAllProposals() public view returns (proposal[] memory) {
+        return proposals;
+    }
 
     // chainlink weather functions
     uint256 public tempChainlink;
@@ -152,8 +179,7 @@ contract AgroDAO {
         uint256 _amount
     ) public {
         // reduce agroToken
-
-        require(getUserBalance(msg.sender) >= 1200, "Insufficient tokens");
+        require(getUserBalance(msg.sender) >= 900, "Insufficient tokens");
         require(
             members[msg.sender].loan == 0,
             "You already have a existing loan"
