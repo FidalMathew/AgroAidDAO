@@ -2,7 +2,6 @@
 
 pragma solidity >=0.8.2 <0.9.0;
 import "./Token.sol";
-import "@chainlink/contracts/src/v0.8/AutomationCompatible.sol";
 
 // import "./ChainRequest.sol";
 
@@ -110,10 +109,10 @@ contract AgroDAO {
 
     // transfer token on funding the dao
     // transfer token to funder
-    function transfer(
-        address receiver,
-        uint256 numTokens
-    ) public returns (bool) {
+    function transfer(address receiver, uint256 numTokens)
+        public
+        returns (bool)
+    {
         uint256 contractCurrTokenBalance = contractTokenBalance();
         require(
             numTokens <= contractCurrTokenBalance,
@@ -173,11 +172,21 @@ contract AgroDAO {
     uint256 _duration = 130 seconds;
 
     mapping(address => uint256) public loanTimer;
+    event ProposalCreated(
+        string description,
+        address owner,
+        uint256 amount,
+        bool isExecuted,
+        uint256 startTime,
+        uint256 endTime,
+        uint256 votesFor,
+        uint256 votesAgainst,
+        address [] voters
+    );
 
-    function createProposal(
-        string memory _description,
-        uint256 _amount
-    ) public {
+    function createProposal(string memory _description, uint256 _amount)
+        public
+    {
         // reduce agroToken
         require(getUserBalance(msg.sender) >= 900, "Insufficient tokens");
         require(
@@ -197,13 +206,26 @@ contract AgroDAO {
         newProposal.endTime = endTime;
         newProposal.votesFor = 0;
         newProposal.votesAgainst = 0;
-
         proposals.push(newProposal);
+
+        emit ProposalCreated(
+            newProposal.description,
+            newProposal.owner,
+            newProposal.amount,
+            newProposal.isExecuted,
+            newProposal.startTime,
+            newProposal.endTime,
+            newProposal.votesFor,
+            newProposal.votesAgainst,
+            newProposal.voters
+        );
     }
 
-    function isProposalActive(
-        uint256 _proposalIndex
-    ) public view returns (bool) {
+    function isProposalActive(uint256 _proposalIndex)
+        public
+        view
+        returns (bool)
+    {
         if (
             proposals[_proposalIndex].votesFor <=
             proposals[_proposalIndex].votesAgainst
@@ -252,9 +274,11 @@ contract AgroDAO {
         proposals[_proposalIndex].isExecuted = true;
     }
 
-    function getVotingResults(
-        uint256 _proposalIndex
-    ) public view returns (uint256 votesFor, uint256 votesAgainst) {
+    function getVotingResults(uint256 _proposalIndex)
+        public
+        view
+        returns (uint256 votesFor, uint256 votesAgainst)
+    {
         require(_proposalIndex < proposals.length, "Invalid proposal index");
 
         votesFor = proposals[_proposalIndex].votesFor;

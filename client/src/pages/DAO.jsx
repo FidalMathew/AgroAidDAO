@@ -20,7 +20,7 @@ import {
     Badge,
     FormErrorMessage,
 } from "@chakra-ui/react"
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar"
 import { Fragment, useEffect } from "react";
 import { GoPrimitiveDot } from 'react-icons/go';
@@ -31,6 +31,7 @@ import { useState } from "react";
 import useContract from "../hooks/useContract";
 import useGlobalContext from "../hooks/useGlobalContext";
 import { ethers } from "ethers";
+
 const notifications = [
     {
         notification: `<p style="font-size: medium;"><span style="font-weight: 600;font-size: medium;">Dan Abrahmov's</span> paid 1 ETH</p>`,
@@ -83,13 +84,13 @@ const articles = [
 
 
 const DAO = () => {
+    
     const [checked, setChecked] = useState(false)
     useEffect(() => {
         console.log(checked, 'checked')
     }, [checked])
-
-    const { daoContract } = useGlobalContext();
-
+    const { daoContract, checkIfWalletIsConnected,currentAccount} = useGlobalContext();
+    const navigate=useNavigate();
     const [daoBalance, setDaoBalance] = useState(0);
     const [daoToken, setDaoToken] = useState(0);
     // total proposals
@@ -102,7 +103,8 @@ const DAO = () => {
     useEffect(() => {
         console.log(members[0], 'members')
     }, [members])
-
+    
+   
     useEffect(() => {
         if (daoContract) {
             daoContract.getDAOBalance().then((res) => {

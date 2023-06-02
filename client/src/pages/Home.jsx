@@ -11,17 +11,13 @@ import useCurrentLocation from '../hooks/useCurrentLocation';
 import { LockIcon } from '@chakra-ui/icons';
 
 const Home = () => {
-    const { currentAccount, joinLoading, join } = useGlobalContext()
+    const { currentAccount, joinLoading, join,checkIfWalletIsConnected } = useGlobalContext()
     const navigate = useNavigate()
 
 
-    useEffect(() => {
-        if (currentAccount === undefined) {
-            navigate('/connectwallet')
-        }
-    }, [currentAccount])
 
     const { latitude, longitude ,country} = useCurrentLocation()
+    // const navigate=useNavigate()
 
     // console log the current location
     useEffect(() => {

@@ -1,0 +1,35 @@
+useEffect(() => {
+        const handleWalletConnection = async () => {
+          // Call the function to check wallet connection from the previous code
+          const isConnected = await checkIfWalletIsConnected();
+          console.log("-------------------")
+          console.log(isConnected)
+          console.log("-------------------")
+          if (isConnected) {
+            // Navigate to the connected page
+            navigate('/');
+          } else {
+            // Navigate to the disconnected page
+            navigate('/connectwallet'); 
+          }
+        };
+    
+        handleWalletConnection();
+      }, []);
+      useEffect(() => {
+        if (currentAccount === undefined) {
+            navigate('/connectwallet')
+        }
+        else
+        {
+            navigate('/')
+        }
+    }, [currentAccount])
+
+    {/* <Route path="/" element={<Home />} />
+        <Route path="/location" element={<Location />} />
+        <Route path="/profile/:id" element={<Profile />} />
+        <Route path="/dao/" element={<DAO />} />
+        <Route path="/dao/:id" element={<Proposal />} />
+        <Route path="/connectwallet" element={<Connectwallet />} />
+        <Route path="/*" element={<Error />} /> */}

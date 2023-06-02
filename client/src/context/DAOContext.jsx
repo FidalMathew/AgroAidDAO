@@ -16,6 +16,7 @@ const DAOContextprovider = ({ children }) => {
     const [daoContract, setdaoContract] = useState("");
     const [ethBalance, setEthBalance] = useState(0);
     const { ethereum } = window;
+    // const [login,setLogin]=useState(false)
     const navigate = useNavigate()
     const toast = useToast()
 
@@ -74,49 +75,35 @@ const DAOContextprovider = ({ children }) => {
 
         }
     }, [ethereum])
-
-    useEffect(() => {
-        const checkIfWalletIsConnected = async () => {
-
-            try {
-
-                if (!ethereum) {
-                    console.log("Metamask not found")
-                    return;
-                }
-                else
-                    console.log("we have ethereum object");
-
-                const accounts = await ethereum.request({ method: "eth_accounts" });  //check if there are accounts connected to the site
-
-                if (accounts.length !== 0) {
-                    const account = accounts[0];
-                    console.log("Found an authorized account:", account);
-                    setCurrentAccount(account)
-                }
-                else {
-                    setCurrentAccount("")
-                    console.log("No authorized accounts found!");
-                    navigate('/connectwallet')
-                }
-
-
-                const curr_chainId = await ethereum.request({ method: 'eth_chainId' });
-                setChainId(curr_chainId)
-
-                ethereum.on('chainChanged', handleChainChanged);
-
-
-                // Reload the page when they change networks
-                function handleChainChanged(_chainId) {
-                    window.location.reload();
-                }
-
-            } catch (error) {
-                console.log(error);
-            }
+    const checkIfWalletIsConnected = async () => {
+        try {
+          if (!ethereum) {
+            console.log("Metamask not found");
+            return false;
+          } else {
+            console.log("we have ethereum object");
+          }
+      
+          const accounts = await ethereum.request({ method: "eth_accounts" });
+      
+          if (accounts.length !== 0) {
+            const account = accounts[0];
+            console.log("Found an authorized account:", account);
+            setCurrentAccount(account);
+            return true; // Wallet is connected
+          } else {
+            setCurrentAccount("");
+            console.log("No authorized accounts found!");
+            return false; // Wallet is not connected
+          }
+      
+          // Rest of the code...
+        } catch (error) {
+          console.log(error);
+          return false; // Wallet is not connected
         }
-
+      };
+    useEffect(() => {
         checkIfWalletIsConnected();
     }, [currentAccount, AgroDAOabi, ethereum])
 
@@ -128,6 +115,7 @@ const DAOContextprovider = ({ children }) => {
                 .then((accounts) => {
                     const selectedAccount = accounts[0];
                     setCurrentAccount(selectedAccount);
+                    // setLogin(true)
                     navigate("/")
                     toast({
                         title: "Account connected.",
@@ -219,7 +207,7 @@ const DAOContextprovider = ({ children }) => {
 
 
     return (
-        <DAOContext.Provider value={{ ethBalance, connectWallet, currentAccount, switchNetwork, disconnectWallet, daoContract, join, joinLoading }}>
+        <DAOContext.Provider value={{ ethBalance, connectWallet, currentAccount, switchNetwork, disconnectWallet, daoContract, join, joinLoading,currentAccount,checkIfWalletIsConnected }}>
             {children}
         </DAOContext.Provider>
     )

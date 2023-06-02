@@ -1,9 +1,11 @@
 import { Box, Button, Center } from "@chakra-ui/react"
+import { useEffect } from "react"
 import useGlobalContext from "../hooks/useGlobalContext"
-
+import { useNavigate } from "react-router-dom"
 const Connectwallet = () => {
-    const { connectWallet } = useGlobalContext()
-
+    const navigate=useNavigate()
+    const { connectWallet ,checkIfWalletIsConnected} = useGlobalContext()
+    
     return (
         <Center minH="100vh" minW="100vw">
             <Button
