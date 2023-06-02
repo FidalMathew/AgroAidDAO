@@ -188,7 +188,7 @@ const Proposal = () => {
                                     <Text fontSize="sm" fontWeight={"semibold"}>Status</Text>
                                     {/* <PulseComponent status={"expired"} />  */}
                                     {/*  status === "pending" ? "Pending" : status === "completed" ? "Done" : status == "expired" && "Expired" */}
-                                    <PulseComponent status={{isExecuted}===true ? "completed" : {currTime}>={endTime} ?  "expired" :"pending"} />
+                                    <PulseComponent status={{isExecuted}===true ? "completed" : currTime>=endTime ?  "expired" :"pending"} />
                                 </SimpleGrid>
                                 <SimpleGrid border="1px" p="5" w="full" rounded="md" columns={{ base: 1 }} spacing={"2"}>
                                     <Text fontSize="sm" fontWeight={"semibold"}>Time Left</Text>

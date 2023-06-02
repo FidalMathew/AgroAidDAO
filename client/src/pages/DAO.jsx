@@ -50,15 +50,18 @@ const DAO = () => {
     const [fetchedProposals, setFetchedProposals] = useState([])
 
     const [Completed,setCompleted]=useState(false);
-    // const end = new Date(proposal.endTime)
-    // const now = new Date()
+    const [currTime,setCurrTime]=useState(0);
+    const [endTime,setEndTime]=useState(0);
+
+    const now = new Date()
+
+    useEffect(()=>{
+         setCurrTime(now)
+    },[now])
+    console.log(currTime)
 
     
-    // useEffect(()=>{
-    //     if(now>end){
-    //         setCompleted(true);
-    //     }
-    // },[now])
+
     useEffect(() => {
         console.log(members[0], 'members')
     }, [members])
@@ -121,6 +124,10 @@ const DAO = () => {
         return formattedDateTime;
     };
 
+    const toDate=(date)=>{
+          return new Date(date)
+    }
+
     useEffect(() => {
         const getAllProposals = async () => {
 
@@ -144,10 +151,13 @@ const DAO = () => {
                             votesAgainst: Number(proposalId[7]),
                             voters: proposalId[8],
                         }
+                        console.log("endTime",convertDateAndTime(proposalId[5]._hex))
                         proposalList.push(proposalValue);
                     }
                     console.log(proposalList, 'proposalList')
                     setFetchedProposals(proposalList);
+                    
+                    setEndTime(endTime)
                 }
             } catch (error) {
                 console.log(error)
@@ -183,6 +193,9 @@ const DAO = () => {
             setProposalLoading(false);
         }
     }
+
+    // use state for current time 
+
 
     useEffect(() => {
 
@@ -480,7 +493,15 @@ const DAO = () => {
                                         state={{ proposal: proposal }}
                                     >{proposal.owner.toString().slice(0, 5) + "..." + proposal.owner.toString().slice(-4)}</Link></Td>
                                     {/* <Td >{proposal.amount}</Td> */}
-                                    <Td textAlign={"right"}>{proposal.isExecuted ? <Badge colorScheme='green'>Executed</Badge> : <Badge colorScheme='yellow'>Pending</Badge>}</Td>
+                                    {/*  <PulseComponent status={{isExecuted}===true ? "completed" : {currTime}>={endTime} ?  "expired" :"pending"} /> */}
+                                    <Td textAlign={"right"}>
+                                        <Text>{currTime.toLocaleString()}</Text>
+                                    </Td>
+                                    <Td textAlign={"right"}>{proposal.isExecuted ? <Badge colorScheme='green'>Executed</Badge> : currTime>=toDate(proposal.endTime) ? <Badge colorScheme='red'>Expired</Badge>:<Badge colorScheme='yellow'>Pending</Badge>}</Td>
+                                    {/* <Td textAlign={"right"}>{proposal.endTime}</Td> */}
+                    
+                                      
+                                    {/* <Td textAlign={"right"}>{proposal.isExecuted ? "Execution completed": {currTime}>=Date(proposal.endTime) ? "Expired":"Pending"}</Td> */}
                                     <Td textAlign={"right"}>{proposal.startTime}</Td>
                                     <Td textAlign={"right"}>{proposal.endTime}</Td>
                                 </Tr>))
