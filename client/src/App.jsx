@@ -8,9 +8,10 @@ import Location from './pages/Location'
 import Connectwallet from './pages/Connectwallet'
 import useGlobalContext from './hooks/useGlobalContext'
 import Error from './pages/Error'
+import PrivateRoutes from './components/Protectedroute'
 
 function App() {
-  
+
   return (
     <Box overflowX="hidden">
       <Routes>
@@ -19,7 +20,9 @@ function App() {
         <Route path="/profile/:id" element={<Profile />} />
         <Route path="/dao/" element={<DAO />} />
         <Route path="/proposal/:id" element={<Proposal />} />
-        <Route path="/connectwallet" element={<Connectwallet />} />
+        <Route element={<PrivateRoutes />}>
+          <Route path="/connectwallet" element={<Connectwallet />} />
+        </Route>
         <Route path="/*" element={<Error />} />
       </Routes>
     </Box>

@@ -37,19 +37,22 @@ const DAOContextprovider = ({ children }) => {
 
     useEffect(() => {
         async function fetchEthBalance() {
-            if (window.ethereum) {
-                const provider = new ethers.providers.Web3Provider(window.ethereum);
-                const signer = provider.getSigner();
-                const address = await signer.getAddress();
-                provider.getBalance(currentAccount).then(res => {
-                    const formattedBalance = ethers.utils.formatEther(res);
-                    setEthBalance(formattedBalance)
-                }).catch(err => console.log(err))
+            if (window.ethereum && currentAccount) {
+                try {
+                    const provider = new ethers.providers.Web3Provider(window.ethereum);
+                    const balance = await provider.getBalance(currentAccount);
+                    const formattedBalance = ethers.utils.formatEther(balance);
+                    setEthBalance(formattedBalance);
+                } catch (error) {
+                    console.error('Error fetching ETH balance:', error);
+                }
             }
         }
 
         fetchEthBalance();
-    }, []);
+    }, [currentAccount]);
+
+    console.log("ethBalance ", ethBalance || "Fetching balance...");
 
 
     useEffect(() => {
