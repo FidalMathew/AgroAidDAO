@@ -494,9 +494,7 @@ const DAO = () => {
                                     >{proposal.owner.toString().slice(0, 5) + "..." + proposal.owner.toString().slice(-4)}</Link></Td>
                                     {/* <Td >{proposal.amount}</Td> */}
                                     {/*  <PulseComponent status={{isExecuted}===true ? "completed" : {currTime}>={endTime} ?  "expired" :"pending"} /> */}
-                                    <Td textAlign={"right"}>
-                                        <Text>{currTime.toLocaleString()}</Text>
-                                    </Td>
+                                    
                                     <Td textAlign={"right"}>{proposal.isExecuted ? <Badge colorScheme='green'>Executed</Badge> : currTime>=toDate(proposal.endTime) ? <Badge colorScheme='red'>Expired</Badge>:<Badge colorScheme='yellow'>Pending</Badge>}</Td>
                                     {/* <Td textAlign={"right"}>{proposal.endTime}</Td> */}
                     

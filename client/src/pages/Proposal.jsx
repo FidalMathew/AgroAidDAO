@@ -97,24 +97,34 @@ const Proposal = () => {
     const [isExecuted,setIsExecuted]=useState(false);
     const [currTime,setCurrTime]=useState(0);
     const [endTime,setEndTime]=useState(0);
-
+    const [dayRem,setDayRem]=useState(0);
     const end = new Date(proposal.endTime)
     const now = new Date()
 
     useEffect(() => {
         if (end < now) {
             setExpired(true)
+
+        }
+        else{
+            
+            const daysRemaining = (Math.ceil((end-now)/ (1000 * 60 * 60 * 24)))
+            setDayRem(daysRemaining)
         }
         if(proposal.isExecuted){
             setIsExecuted(true);
         }
         setCurrTime(now);
         setEndTime(end);
+       
+        
 
     }, [now])
     useEffect(()=>{
         if(end>now){
-            setTimeLeft(end-now);
+            const minutes = Math.ceil((end-now)/ (1000 * 60))
+            setTimeLeft(minutes
+            );
         }
         else{
             setTimeLeft(0);
