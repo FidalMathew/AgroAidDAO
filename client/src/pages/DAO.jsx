@@ -37,6 +37,7 @@ const DAO = () => {
         console.log(checked, 'checked')
     }, [checked])
 
+   
     const { daoContract, currentAccount } = useGlobalContext();
 
     const [daoBalance, setDaoBalance] = useState(0);
@@ -48,6 +49,16 @@ const DAO = () => {
     const [members, setMembers] = useState([])
     const [fetchedProposals, setFetchedProposals] = useState([])
 
+    const [Completed,setCompleted]=useState(false);
+    // const end = new Date(proposal.endTime)
+    // const now = new Date()
+
+    
+    // useEffect(()=>{
+    //     if(now>end){
+    //         setCompleted(true);
+    //     }
+    // },[now])
     useEffect(() => {
         console.log(members[0], 'members')
     }, [members])
