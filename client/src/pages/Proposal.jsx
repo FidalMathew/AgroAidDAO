@@ -72,7 +72,7 @@ const PulseComponent = ({ status }) => {
         boxShadow: "0 0 0 rgba(204,169,44, 0.4)",
         animation: "pulse 2s infinite",
     };
-
+//  <PulseComponent status={expired ? "completed" : "pending"} />
     return (
         <HStack spacing="3">
             <Heading fontSize={"2xl"}>{
@@ -94,18 +94,47 @@ const Proposal = () => {
 
     const [expired, setExpired] = useState(false);
     const [timeLeft, setTimeLeft] = useState(0);
-
+    const [isExecuted,setIsExecuted]=useState(false);
+    const [currTime,setCurrTime]=useState(0);
+    const [endTime,setEndTime]=useState(0);
+    const [dayRem,setDayRem]=useState(0);
     const end = new Date(proposal.endTime)
     const now = new Date()
 
     useEffect(() => {
         if (end < now) {
             setExpired(true)
+
         }
+        else{
+            
+            const daysRemaining = (Math.ceil((end-now)/ (1000 * 60 * 60 * 24)))
+            setDayRem(daysRemaining)
+        }
+        if(proposal.isExecuted){
+            setIsExecuted(true);
+        }
+        setCurrTime(now);
+        setEndTime(end);
+       
+        
 
     }, [now])
+    useEffect(()=>{
+        if(end>now){
+            const minutes = Math.ceil((end-now)/ (1000 * 60))
+            setTimeLeft(minutes
+            );
+        }
+        else{
+            setTimeLeft(0);
+            setExpired(true);
+        }
+    })
 
     console.log(proposal, 'expired')
+    console.log(proposal.endTime)
+    console.log(isExecuted);
 
 
 
@@ -167,11 +196,13 @@ const Proposal = () => {
                             <HStack w="xs" m="auto">
                                 <SimpleGrid border="1px" w="full" p="5" rounded="md" columns={{ base: 1 }} spacing={"2"}>
                                     <Text fontSize="sm" fontWeight={"semibold"}>Status</Text>
-                                    <PulseComponent status={expired ? "completed" : "pending"} />
+                                    {/* <PulseComponent status={"expired"} />  */}
+                                    {/*  status === "pending" ? "Pending" : status === "completed" ? "Done" : status == "expired" && "Expired" */}
+                                    <PulseComponent status={{isExecuted}===true ? "completed" : currTime>=endTime ?  "expired" :"pending"} />
                                 </SimpleGrid>
                                 <SimpleGrid border="1px" p="5" w="full" rounded="md" columns={{ base: 1 }} spacing={"2"}>
                                     <Text fontSize="sm" fontWeight={"semibold"}>Time Left</Text>
-                                    <Heading fontSize={"2xl"}>10 mins</Heading>
+                                    <Heading fontSize={"2xl"}>{timeLeft} mins</Heading>
                                 </SimpleGrid>
                             </HStack>
                             <Stack w="xs" h='full' direction={{ base: "column" }} spacing={{ base: 5, sm: 10 }} m="5" >
