@@ -9,6 +9,8 @@ import Connectwallet from './pages/Connectwallet'
 import useGlobalContext from './hooks/useGlobalContext'
 import Error from './pages/Error'
 import PrivateRoutes from './components/Protectedroute'
+import Leaderboard from './pages/Leaderboard'
+import JoinProtected from './components/JoinProtected'
 
 function App() {
 
@@ -17,9 +19,12 @@ function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/location" element={<Location />} />
-        <Route path="/profile/:id" element={<Profile />} />
-        <Route path="/dao/" element={<DAO />} />
-        <Route path="/proposal/:id" element={<Proposal />} />
+        <Route element={<JoinProtected />}>
+          <Route path="/profile/:id" element={<Profile />} />
+          <Route path="/dao/" element={<DAO />} />
+          <Route path="/proposal/:id" element={<Proposal />} />
+          <Route path="/leaderboard" element={<Leaderboard />} />
+        </Route>
         <Route element={<PrivateRoutes />}>
           <Route path="/connectwallet" element={<Connectwallet />} />
         </Route>

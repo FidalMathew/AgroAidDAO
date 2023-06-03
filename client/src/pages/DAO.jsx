@@ -37,7 +37,7 @@ const DAO = () => {
         console.log(checked, 'checked')
     }, [checked])
 
-   
+
     const { daoContract, currentAccount } = useGlobalContext();
 
     const [daoBalance, setDaoBalance] = useState(0);
@@ -49,18 +49,18 @@ const DAO = () => {
     const [members, setMembers] = useState([])
     const [fetchedProposals, setFetchedProposals] = useState([])
 
-    const [Completed,setCompleted]=useState(false);
-    const [currTime,setCurrTime]=useState(0);
-    const [endTime,setEndTime]=useState(0);
+    const [Completed, setCompleted] = useState(false);
+    const [currTime, setCurrTime] = useState(0);
+    const [endTime, setEndTime] = useState(0);
 
     const now = new Date()
 
-    useEffect(()=>{
-         setCurrTime(now)
-    },[now])
-    console.log(currTime)
+    useEffect(() => {
+        setCurrTime(now)
+    }, [now])
 
-    
+
+
 
     useEffect(() => {
         console.log(members[0], 'members')
@@ -124,8 +124,8 @@ const DAO = () => {
         return formattedDateTime;
     };
 
-    const toDate=(date)=>{
-          return new Date(date)
+    const toDate = (date) => {
+        return new Date(date)
     }
 
     useEffect(() => {
@@ -151,12 +151,12 @@ const DAO = () => {
                             votesAgainst: Number(proposalId[7]),
                             voters: proposalId[8],
                         }
-                        console.log("endTime",convertDateAndTime(proposalId[5]._hex))
+                        console.log("endTime", convertDateAndTime(proposalId[5]._hex))
                         proposalList.push(proposalValue);
                     }
                     console.log(proposalList, 'proposalList')
                     setFetchedProposals(proposalList);
-                    
+
                     setEndTime(endTime)
                 }
             } catch (error) {
@@ -214,7 +214,7 @@ const DAO = () => {
                     amount: Number(amount),
                     isExecuted: isExecuted,
                     startTime: convertDateAndTime(startTime._hex),
-                    endTime:  convertDateAndTime(endTime._hex),
+                    endTime: convertDateAndTime(endTime._hex),
                     votesFor: Number(votesFor),
                     votesAgainst: Number(votesAgainst),
                     voters: voters,
@@ -289,12 +289,9 @@ const DAO = () => {
                                     </Center>
                                 </Box>
                             ) : null}
-                            {members.length - 1 !== index && <Divider m={0} />}
+                            {members.length - 1 !== index + 1 && <Divider m={0} />}
                         </Fragment>
                     ))}
-
-
-
                 </VStack>
                 {/*  */}
 
@@ -325,6 +322,7 @@ const DAO = () => {
 
                         onSubmit={(value, action) => {
                             CreateProposal(value.description, value.amount);
+                            // console.log(value, 'value')
                             action.resetForm();
                         }}
                     >
@@ -485,24 +483,27 @@ const DAO = () => {
                             <Th textAlign={"right"}>End Time</Th>
                         </Tr>
                     </Thead>
+                    {fetchedProposals.length === 0 && (
+                        <Tbody>
+                            <Tr>
+                                <Td colSpan={4} textAlign={"center"}>No proposals found.</Td>
+                            </Tr>
+                        </Tbody>
+                    )}
                     <Tbody>
                         {
-                            fetchedProposals.map((proposal, index) => (
-                                <Tr key={index}>
-                                    <Td><Link to={`/proposal/${proposal.proposalId}`} 
-                                        state={{ proposal: proposal }}
-                                    >{proposal.owner.toString().slice(0, 5) + "..." + proposal.owner.toString().slice(-4)}</Link></Td>
-                                    {/* <Td >{proposal.amount}</Td> */}
-                                    {/*  <PulseComponent status={{isExecuted}===true ? "completed" : {currTime}>={endTime} ?  "expired" :"pending"} /> */}
-                                    
-                                    <Td textAlign={"right"}>{proposal.isExecuted ? <Badge colorScheme='green'>Executed</Badge> : currTime>=toDate(proposal.endTime) ? <Badge colorScheme='red'>Expired</Badge>:<Badge colorScheme='yellow'>Pending</Badge>}</Td>
-                                    {/* <Td textAlign={"right"}>{proposal.endTime}</Td> */}
-                    
-                                      
-                                    {/* <Td textAlign={"right"}>{proposal.isExecuted ? "Execution completed": {currTime}>=Date(proposal.endTime) ? "Expired":"Pending"}</Td> */}
-                                    <Td textAlign={"right"}>{proposal.startTime}</Td>
-                                    <Td textAlign={"right"}>{proposal.endTime}</Td>
-                                </Tr>))
+                            <>
+                                {fetchedProposals.map((proposal, index) => (
+                                    <Tr key={index}>
+                                        <Td>
+                                            <Link to={`/proposal/${proposal.proposalId}`} state={{ proposal: proposal }}>
+                                                {proposal.owner.toString().slice(0, 5) + "..." + proposal.owner.toString().slice(-4)}
+                                            </Link>
+                                        </Td>
+                                        {/* Rest of the table cells */}
+                                    </Tr>
+                                ))}
+                            </>
                         }
                     </Tbody>
                     {/* <Tfoot>

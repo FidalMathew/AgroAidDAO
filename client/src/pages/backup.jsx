@@ -252,6 +252,58 @@ const backup = () => {
                 </Box>
                 {articles.length - 1 !== index && <Divider m={0} />}
             </Fragment>
+
+            <CardBody>
+                            {!joined && (
+                                <Formik
+                                    initialValues={{
+                                        name: "",
+                                    }}
+                                    validationSchema={Yup.object({
+                                        name: Yup.string()
+                                            .max(15, 'Must be 15 characters or less')
+                                            .required('Required'),
+                                    })}
+                                    onSubmit={(values, action) => {
+                                        const data = {
+                                            name: values.name,
+                                            latitude: latitude,
+                                            longitude: longitude
+                                        }
+                                        console.log(data, 'data')
+                                        action.resetForm()
+                                        join(latitude, longitude, values.name)
+                                    }}
+                                >
+                                    {(formik) => (
+                                        <form onSubmit={formik.handleSubmit}>
+                                            {/* Rest of the form fields */}
+                                            <Button
+                                                width="full"
+                                                isLoading={joinLoading}
+                                                mt={4}
+                                                loadingText="Submitting"
+                                                colorScheme="teal"
+                                                type="submit"
+                                            >
+                                                Join DAO
+                                            </Button>
+                                        </form>
+                                    )}
+                                </Formik>
+                            )}
+
+                            {joined && (
+                                <Button
+                                    width="full"
+                                    mt={4}
+                                    colorScheme="teal"
+                                    onClick={() => navigate("/dao")}
+                                >
+                                    Go to DAO
+                                </Button>
+                            )}
+                        </CardBody>
         </div>
     )
 }

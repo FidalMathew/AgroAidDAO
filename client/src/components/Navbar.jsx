@@ -71,6 +71,8 @@ export default function Navbar() {
           </Flex>
           <Flex flex={{ base: 1 }} justify={{ base: 'center', md: 'start' }}>
             <Text
+              as={Link}
+              to='/dao'
               textAlign={useBreakpointValue({ base: 'center', md: 'left' })}
               fontFamily={'heading'}
               color={useColorModeValue('gray.800', 'white')}>
@@ -87,6 +89,18 @@ export default function Navbar() {
             justify={'flex-end'}
             direction={'row'}
             spacing={6}>
+
+            <Button
+              as={'a'}
+              display={{ base: 'none', md: 'inline-flex' }}
+              fontSize={'sm'}
+              fontWeight={600}
+              href={'/leaderboard'}
+              colorScheme='teal'
+              variant={'outline'}
+            >
+              Leaderboard
+            </Button>
             {!currentAccount ?
               <Button
                 onClick={connectWallet}
@@ -119,8 +133,8 @@ export default function Navbar() {
                 </MenuButton>
                 <MenuList>
                   {/* Add menu items here */}
-                  <MenuItem onClick={disconnectWallet}>Disconnect Wallet</MenuItem>
                   <Link to={currentAccount && `/profile/${currentAccount}`}><MenuItem>Profile</MenuItem></Link>
+                  <MenuItem onClick={disconnectWallet}>Disconnect Wallet</MenuItem>
                 </MenuList>
               </Menu>
             }

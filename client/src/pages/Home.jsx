@@ -9,11 +9,14 @@ import { Field, Formik } from 'formik';
 import * as Yup from 'yup';
 import useCurrentLocation from '../hooks/useCurrentLocation';
 import { LockIcon } from '@chakra-ui/icons';
+import { useState } from 'react';
 
 const Home = () => {
     const { currentAccount, joinLoading, join } = useGlobalContext()
     const navigate = useNavigate()
+    const [joined, setJoined] = useState(false)
 
+    const { daoContract } = useGlobalContext();
 
     useEffect(() => {
         if (currentAccount === undefined) {
@@ -21,7 +24,7 @@ const Home = () => {
         }
     }, [currentAccount])
 
-    const { latitude, longitude ,country} = useCurrentLocation()
+    const { latitude, longitude, country } = useCurrentLocation()
 
     // console log the current location
     useEffect(() => {
@@ -29,6 +32,41 @@ const Home = () => {
             console.log(latitude, longitude, 'location')
         }
     }, [latitude, longitude])
+
+    const [loading, setLoading] = useState(false)
+
+    const checkMembership = async () => {
+        setLoading(true)
+        try {
+            const res = await daoContract.getMemberAddresses();
+            if (res && currentAccount) {
+                const lowercasedRes = res.map((address) => address.toLowerCase());
+                const hasJoined = lowercasedRes.includes(currentAccount.toLowerCase());
+                console.log(hasJoined, 'hasJoined');
+                if (!hasJoined && window.location.pathname !== "/") {
+                    setJoined(false)
+                }
+                else if (hasJoined) {
+                    setJoined(true)
+                }
+            }
+            setLoading(false)
+        } catch (err) {
+            console.log(err);
+        }
+        finally {
+            setLoading(false)
+        }
+    };
+
+    useEffect(() => {
+        if (daoContract && window.ethereum) {
+            checkMembership();
+        }
+    }, [daoContract, currentAccount, location, navigate]);
+
+
+    console.log(joined, 'joined')
 
     return (
         <>
@@ -47,8 +85,15 @@ const Home = () => {
                     >
                         Welcome to AgriDAO
                     </Text>
-                    <Card w={{base: "100%", lg:"80%"}} m="auto" p="10">
-                        <CardBody>
+                    <Card w={{ base: "100%", lg: "80%" }} m="auto" p="10">
+                        <Text textAlign="center" mb="2">
+                            <chakra.span as="b">
+                                Your account:
+                            </chakra.span>{" "}
+                            <chakra.span>
+                                {currentAccount.slice(0, 8) + "..." + currentAccount.slice(-4)}
+                            </chakra.span></Text>
+                        {!joined && <CardBody>
                             <Formik
                                 initialValues={{
                                     name: "",
@@ -110,7 +155,20 @@ const Home = () => {
 
                             </Formik>
 
-                        </CardBody>
+                        </CardBody>}
+
+                        {joined &&
+                            <CardBody>
+                                <Button
+                                    width="full"
+                                    mt={4}
+                                    colorScheme="teal"
+                                    onClick={() => navigate("/dao")}
+                                >
+                                    Go to DAO
+                                </Button>
+                            </CardBody>
+                        }
                     </Card>
                 </VStack>
             </Flex>
