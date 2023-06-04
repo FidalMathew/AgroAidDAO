@@ -31,6 +31,7 @@ contract AgroDAO {
     }
 
     uint256 public a;
+    uint256 counter;
 
     function getMsgValue() public payable {
         a = msg.value;
@@ -143,6 +144,7 @@ contract AgroDAO {
     }
 
     struct proposal {
+        uint256 proposalIndex;
         string description;
         address owner;
         uint256 amount;
@@ -189,6 +191,7 @@ contract AgroDAO {
         uint256 endTime = startTime + _duration;
 
         proposal memory newProposal;
+        newProposal.proposalIndex=counter;
         newProposal.description = _description;
         newProposal.owner = msg.sender;
         newProposal.amount = _amount;
@@ -197,8 +200,10 @@ contract AgroDAO {
         newProposal.endTime = endTime;
         newProposal.votesFor = 0;
         newProposal.votesAgainst = 0;
-
+        
+        counter++;
         proposals.push(newProposal);
+        
     }
 
     function isProposalActive(
