@@ -30,12 +30,6 @@ contract AgroDAO {
         uint256 timestamp;
     }
 
-    uint256 public a;
-
-    function getMsgValue() public payable {
-        a = msg.value;
-    }
-
     // join the dao
     mapping(address => Farmer) public members;
     mapping(string => string[]) public plantDataSet;
@@ -48,14 +42,8 @@ contract AgroDAO {
     constructor() payable {
         agriToken = new Token(INITIAL_TOKEN_AMOUNT, address(this));
         maintainer = msg.sender;
-        // loanTimer[msg.sender]=block.timestamp+20 seconds;
-        // members[msg.sender] = Farmer(msg.sender,100, "1", "1",0);
-        // daoMembers.push(msg.sender);
-        // daoMembers.push(msg.sender);
-        // chainC = new APIConsumer();
-        // mint the tokens first
+
         agriTokenAddress = address(agriToken);
-        // chainLinkAddress = address(chainC);
     }
 
     function contractTokenBalance() public view returns (uint256) {
@@ -170,9 +158,20 @@ contract AgroDAO {
 
     // chainlink weather functions
     uint256 public tempChainlink;
-    uint256 _duration = 130 seconds;
+    uint256 _duration = 300 seconds;
 
     mapping(address => uint256) public loanTimer;
+    event ProposalCreated(
+        string description,
+        address owner,
+        uint256 amount,
+        bool isExecuted,
+        uint256 startTime,
+        uint256 endTime,
+        uint256 votesFor,
+        uint256 votesAgainst,
+        address[] voters
+    );
 
     function createProposal(
         string memory _description,
@@ -197,8 +196,19 @@ contract AgroDAO {
         newProposal.endTime = endTime;
         newProposal.votesFor = 0;
         newProposal.votesAgainst = 0;
-
         proposals.push(newProposal);
+
+        emit ProposalCreated(
+            newProposal.description,
+            newProposal.owner,
+            newProposal.amount,
+            newProposal.isExecuted,
+            newProposal.startTime,
+            newProposal.endTime,
+            newProposal.votesFor,
+            newProposal.votesAgainst,
+            newProposal.voters
+        );
     }
 
     function isProposalActive(
@@ -303,6 +313,7 @@ contract AgroDAO {
 
         // Add the user to the voters list
         selectedProposal.voters.push(msg.sender);
+        members[msg.sender].reputation = members[msg.sender].reputation + 5;
     }
 
     function loanPayBack() public payable {
@@ -326,20 +337,22 @@ contract AgroDAO {
         } else members[user].reputation--;
     }
 
-    address[] topContributors;
-    event topContributorsEmitter(address[] topContributors);
+    address[] topContributorsOfMonth;
 
-    function getTopContributor() public {
-        delete topContributors;
+    function getTopContributors() public view returns (address[] memory) {
+        return topContributorsOfMonth;
+    }
+
+    event topContributorsEmitter(address winner, uint256 time, uint256 amount);
+
+    // function to be called every month
+    function topContributorReset() public {
         uint256 daoLength = daoMembers.length;
-
         uint256 maxReputations = 0;
 
         for (uint256 i = 0; i < daoLength; i++) {
             address user = daoMembers[i];
-
             uint256 reputation = members[user].reputation;
-
             if (reputation > maxReputations) maxReputations = reputation;
         }
 
@@ -349,10 +362,13 @@ contract AgroDAO {
             uint256 reputation = members[user].reputation;
 
             if (reputation == maxReputations) {
-                topContributors.push(user);
+                agriToken.transfer(user, 1000);
+                topContributorsOfMonth.push(user);
+                emit topContributorsEmitter(user, block.timestamp, 1000);
             }
+
+            members[user].reputation = 0; // reset reputation
         }
-        emit topContributorsEmitter(topContributors);
     }
 
     function contibuteDataset(string memory url, string memory name) public {
@@ -371,10 +387,8 @@ contract AgroDAO {
     }
 
     event PaymentDone(address recipient, uint256 amount);
-    event Test(uint256 value);
 
     function checkPayment() public {
-        emit Test(123445);
         for (uint256 i = 0; i < daoMembers.length; ++i) {
             if (paymentDue(daoMembers[i])) {
                 emit PaymentDone(daoMembers[i], loanTimer[daoMembers[i]]);

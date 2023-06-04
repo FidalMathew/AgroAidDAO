@@ -130,9 +130,7 @@ const DAO = () => {
 
     useEffect(() => {
         const getAllProposals = async () => {
-
             try {
-
                 if (daoContract) {
                     const proposalList = [];
                     const res = await daoContract.getAllProposals()
@@ -165,6 +163,7 @@ const DAO = () => {
         }
         getAllProposals();
     }, [daoContract, totalProposal])
+    
 
     const [proposalLoading, setProposalLoading] = useState(false);
     const CreateProposal = async (desc, amount) => {
@@ -289,7 +288,7 @@ const DAO = () => {
                                     </Center>
                                 </Box>
                             ) : null}
-                            {members.length - 1 !== index + 1 && <Divider m={0} />}
+                            {members.length !== index + 1 && <Divider m={0} />}
                         </Fragment>
                     ))}
                 </VStack>
@@ -492,18 +491,22 @@ const DAO = () => {
                     )}
                     <Tbody>
                         {
-                            <>
-                                {fetchedProposals.map((proposal, index) => (
-                                    <Tr key={index}>
-                                        <Td>
-                                            <Link to={`/proposal/${proposal.proposalId}`} state={{ proposal: proposal }}>
-                                                {proposal.owner.toString().slice(0, 5) + "..." + proposal.owner.toString().slice(-4)}
-                                            </Link>
-                                        </Td>
-                                        {/* Rest of the table cells */}
-                                    </Tr>
-                                ))}
-                            </>
+                            fetchedProposals.map((proposal, index) => (
+                                <Tr key={index}>
+                                    <Td><Link to={`/proposal/${proposal.proposalId}`}
+                                        
+                                    >{proposal.owner.toString().slice(0, 5) + "..." + proposal.owner.toString().slice(-4)}</Link></Td>
+                                    {/* <Td >{proposal.amount}</Td> */}
+                                    {/*  <PulseComponent status={{isExecuted}===true ? "completed" : {currTime}>={endTime} ?  "expired" :"pending"} /> */}
+
+                                    <Td textAlign={"right"}>{proposal.isExecuted ? <Badge colorScheme='green'>Executed</Badge> : currTime >= toDate(proposal.endTime) ? <Badge colorScheme='red'>Expired</Badge> : <Badge colorScheme='yellow'>Pending</Badge>}</Td>
+                                    {/* <Td textAlign={"right"}>{proposal.endTime}</Td> */}
+
+
+                                    {/* <Td textAlign={"right"}>{proposal.isExecuted ? "Execution completed": {currTime}>=Date(proposal.endTime) ? "Expired":"Pending"}</Td> */}
+                                    <Td textAlign={"right"}>{proposal.startTime}</Td>
+                                    <Td textAlign={"right"}>{proposal.endTime}</Td>
+                                </Tr>))
                         }
                     </Tbody>
                     {/* <Tfoot>

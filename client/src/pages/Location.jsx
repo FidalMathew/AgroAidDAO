@@ -28,6 +28,7 @@ const Location = () => {
 
     const GEOCODING_API_KEY = '4bf3635847ee4481b2d370c81232e424'
 
+
     const fetchData = async () => {
 
         if (latitude && longitude) {
@@ -47,7 +48,7 @@ const Location = () => {
         }
     };
 
-    
+
 
     // async function convertCurrency(from, to, amount) {
 

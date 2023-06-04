@@ -2,11 +2,10 @@ import { Box, Button, Container, HStack, Heading, SimpleGrid, Stack, Stat, StatL
 import Navbar from "../components/Navbar"
 import { PieChart, Pie, Sector, Cell, ResponsiveContainer, Legend } from 'recharts';
 import { CheckIcon, CloseIcon, RepeatClockIcon } from "@chakra-ui/icons";
-import { useLocation, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import useGlobalContext from "../hooks/useGlobalContext";
 import { useState } from "react";
 import { useEffect } from "react";
-
 // const data = [
 //     { name: 'Group A', value: 1000 },
 //     { name: 'Group B', value: 200 },
@@ -90,9 +89,7 @@ const PulseComponent = ({ status }) => {
 
 const Proposal = () => {
     const toast = useToast()
-    const { state } = useLocation()
-    const initialProposal = state?.proposal
-    const [proposal, setProposal] = useState([])
+    const [proposal, setProposal] = useState({})
 
     const [votingData, setVotingData] = useState([
         { name: 'Vote For', value: 0 },
@@ -111,10 +108,11 @@ const Proposal = () => {
     const [votingLoading2, setVotingLoading2] = useState(false);
     const { daoContract, currentAccount } = useGlobalContext()
     const { id } = useParams()
+    const navigate = useNavigate()
 
 
     const voting = async (proposalIndex, voteVar) => {
-        (voteVar === true) ? setVotingLoading1(true) : setVotingLoading2(true)
+        (voteVar == true) ? setVotingLoading1(true) : setVotingLoading2(true)
         try {
             const transaction = await daoContract.castVote(proposalIndex, voteVar)
             await transaction.wait();
@@ -138,7 +136,7 @@ const Proposal = () => {
                 isClosable: true,
             });
         } finally {
-            (voteVar === true) ? setVotingLoading1(false) : setVotingLoading2(false)
+            (voteVar == true) ? setVotingLoading1(false) : setVotingLoading2(false)
         }
     };
 
@@ -165,11 +163,13 @@ const Proposal = () => {
 
     useEffect(() => {
         const getAllProposals = async () => {
+
             try {
+
                 if (daoContract) {
                     const proposalList = [];
                     const res = await daoContract.getAllProposals()
-                    // console.log(filteredProposal, 'filteredProposal')
+
                     for (let i = 0; i < res.length; i++) {
                         const proposalId = res[i];
                         const proposalValue = {
@@ -184,61 +184,70 @@ const Proposal = () => {
                             votesAgainst: Number(proposalId[7]),
                             voters: proposalId[8],
                         }
+                        proposalList.push(proposalValue);
                     }
-                    proposalList.push(proposalValue);
-                    setProposal(proposalList[id])
+                    console.log(proposalList[id], 'proposalList')
+                    setProposal(proposalList[id]);
+
+                    setEndTime(endTime)
                 }
             } catch (error) {
                 console.log(error)
             }
         }
         getAllProposals();
-    }, [daoContract, id, location])
+    }, [daoContract, location, id])
 
 
     useEffect(() => {
-        if (proposal.voters.includes(currentAccount)) {
-            setHasVoted(true)
+        if (proposal && proposal.voters && proposal.voters.includes(currentAccount)) {
+            setHasVoted(true);
+        } else {
+            setHasVoted(false);
         }
-        else {
-            setHasVoted(false)
-        }
-    }, [proposal, currentAccount])
+    }, [proposal, currentAccount]);
+
 
     const end = new Date(proposal.endTime)
     const now = new Date()
 
     useEffect(() => {
         setVotingData([
-            { name: 'Vote For', value: proposal.votesFor },
-            { name: 'Vote Against', value: proposal.votesAgainst },
+            { name: 'Vote For', value: proposal?.votesFor },
+            { name: 'Vote Against', value: proposal?.votesAgainst },
         ])
-    }, [id, location, hasVoted])
+    }, [id, location, hasVoted, proposal])
 
 
     useEffect(() => {
-        if (end < now) {
-            setExpired(true)
-        }
-        else {
-            const daysRemaining = (Math.ceil((end - now) / (1000 * 60 * 60 * 24)))
-            setDayRem(daysRemaining)
-        }
-        if (proposal.isExecuted) {
-            setIsExecuted(true);
-        }
-        setCurrTime(now);
-        setEndTime(end);
-    }, [])
+ 
+
+            if (end < now) {
+                setExpired(true)
+            }
+            else {
+                const daysRemaining = (Math.ceil((end - now) / (1000 * 60 * 60 * 24)))
+                setDayRem(daysRemaining)
+            }
+            if (proposal.isExecuted) {
+                setIsExecuted(true);
+            }
+            setCurrTime(now);
+            setEndTime(end);
+      
+    }, [proposal])
 
     useEffect(() => {
-        if (end > now) {
-            const minutes = Math.ceil((end - now) / (1000 * 60))
-            setTimeLeft(minutes);
-        }
-        else {
-            setTimeLeft(0);
-            setExpired(true);
+        if (proposal !== {}) {
+
+            if (end > now) {
+                const minutes = Math.ceil((end - now) / (1000 * 60))
+                setTimeLeft(minutes);
+            }
+            else {
+                setTimeLeft(0);
+                setExpired(true);
+            }
         }
     }, [now])
 
@@ -250,7 +259,7 @@ const Proposal = () => {
         }
     }, [currentAccount])
 
-    console.log(proposal, 'proposal in proposal')
+    console.log(proposal, 'proposal in dimag')
 
 
     return (
@@ -260,7 +269,7 @@ const Proposal = () => {
                 <VStack spacing="10">
                     <VStack>
                         <Heading>Proposal Title</Heading>
-                        <Text>initiated by: {proposal.owner.toString().slice(0, 5) + "..." + proposal.owner.toString().slice(-4)}</Text>
+                        <Text>initiated by: {proposal?.owner?.toString().slice(0, 5) + "..." + proposal?.owner?.toString().slice(-4)}</Text>
                         <Text fontSize={"md"} maxW="xl" textAlign={"center"}>
                             {/* Random text of length 50 words */}
                             {proposal?.description}
@@ -269,7 +278,7 @@ const Proposal = () => {
                     <Stack direction={{ base: "column", xl: "row" }} alignItems={"center"} justifyContent={"center"} minW="50vw" spacing="6">
                         <Box border={"1px"} rounded={"xl"} m="5">
                             <Heading size={"md"} textAlign={"center"} p="3">Voting</Heading>
-                            {proposal.votesFor == 0 && proposal.votesAgainst == 0 ?
+                            {proposal?.votesFor == 0 && proposal?.votesAgainst == 0 ?
                                 <Box width={"25rem"} h="25rem">
                                     <Text fontSize={"md"} textAlign={"center"}>No votes yet</Text>
                                 </Box> :
@@ -295,15 +304,15 @@ const Proposal = () => {
                         </Box>
                         <VStack spacing="6">
                             <HStack w="full">
-                                <StatsCard title={proposal.amount == 0 ? "" : "Amount Requested"} stat={proposal.amount == 0 ? "General Proposal" : proposal.amount + " ETH"} />
+                                <StatsCard title={proposal?.amount == 0 ? "" : "Amount Requested"} stat={proposal?.amount == 0 ? "General Proposal" : proposal?.amount + " ETH"} />
                                 {/* <StatsCard title={'Time left'} stat={'10 mins'} /> */}
                             </HStack>
                             <Box border={"1px"} rounded={"xl"} >
                                 <Heading size={"md"} textAlign={"center"} p="3">Voting Details</Heading>
                                 <Box w="xs" mx={'auto'} pt={5} px={{ base: 2, sm: 12, md: 17 }}>
                                     <SimpleGrid columns={{ base: 1 }} spacing={{ base: 5, lg: 8 }} mb="5">
-                                        <StatsCard title={'Voting power in-favour'} stat={proposal.votesFor} />
-                                        <StatsCard title={'Voting power - against'} stat={proposal.votesAgainst} />
+                                        <StatsCard title={'Voting power in-favour'} stat={proposal?.votesFor} />
+                                        <StatsCard title={'Voting power - against'} stat={proposal?.votesAgainst} />
                                         {/* <StatsCard title={'Who speak'} stat={'100 different languages'} /> */}
                                     </SimpleGrid>
                                 </Box>
@@ -326,7 +335,7 @@ const Proposal = () => {
                             </HStack>
                             <Stack w="xs" h='full' direction={{ base: "column" }} spacing={{ base: 5, sm: 10 }} m="5" >
                                 <Tooltip
-                                    label={hasVoted ? "You have already voted" : expired ? "Voting has expired" : proposal.owner.toLowerCase() == currentAccount.toLowerCase() ? "You cannot vote on your own proposal" : ""}
+                                    label={hasVoted ? "You have already voted" : expired ? "Voting has expired" : proposal?.owner?.toLowerCase() == currentAccount.toLowerCase() ? "You cannot vote on your own proposal" : ""}
                                 >
                                     <Button
                                         rightIcon={<CheckIcon />}
@@ -335,7 +344,7 @@ const Proposal = () => {
                                         size="md"
                                         w="full"
                                         mx={'auto'}
-                                        isDisabled={hasVoted || expired || proposal.owner.toLowerCase() == currentAccount.toLowerCase()}
+                                        isDisabled={hasVoted || expired || proposal?.owner?.toLowerCase() == currentAccount.toLowerCase()}
                                         loadingText="Voting..."
                                         isLoading={votingLoading1}
                                         onClick={() => voting(proposal.proposalId, true)}
@@ -344,7 +353,7 @@ const Proposal = () => {
                                     </Button>
                                 </Tooltip>
                                 <Tooltip
-                                    label={hasVoted ? "You have already voted" : expired ? "Voting has expired" : proposal.owner.toLowerCase() == currentAccount.toLowerCase() ? "You cannot vote on your own proposal" : ""}
+                                    label={hasVoted ? "You have already voted" : expired ? "Voting has expired" : proposal?.owner?.toLowerCase() == currentAccount.toLowerCase() ? "You cannot vote on your own proposal" : ""}
                                 >
                                     <Button
                                         rightIcon={<CloseIcon color={"red.300"} />} colorScheme="teal"
@@ -352,10 +361,10 @@ const Proposal = () => {
                                         size="md"
                                         w="full"
                                         mx={'auto'}
-                                        isDisabled={hasVoted || expired || proposal.owner.toLowerCase() == currentAccount.toLowerCase()}
+                                        isDisabled={hasVoted || expired || proposal?.owner?.toLowerCase() == currentAccount.toLowerCase()}
                                         loadingText="Voting..."
                                         isLoading={votingLoading2}
-                                        onClick={() => voting(proposal.proposalIndex, true)}
+                                        onClick={() => voting(proposal.proposalId, false)}
                                     >
                                         Vote Against
                                     </Button>
@@ -366,7 +375,7 @@ const Proposal = () => {
                                     <Button
                                         colorScheme="teal"
                                         rightIcon={<RepeatClockIcon color="yellow.500" />} variant="outline" size="md" w="full" mx={'auto'}
-                                        isDisabled={expired || isExecuted}
+                                        isDisabled={!expired || isExecuted}
                                     >
                                         Execute Proposal
                                     </Button>
