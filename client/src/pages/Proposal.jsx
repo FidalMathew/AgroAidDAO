@@ -2,7 +2,7 @@ import { Box, Button, Container, HStack, Heading, SimpleGrid, Stack, Stat, StatL
 import Navbar from "../components/Navbar"
 import { PieChart, Pie, Sector, Cell, ResponsiveContainer, Legend } from 'recharts';
 import { CheckIcon, CloseIcon, RepeatClockIcon } from "@chakra-ui/icons";
-import { useLocation } from "react-router-dom";
+import { useLocation, useParams } from "react-router-dom";
 import useGlobalContext from "../hooks/useGlobalContext";
 import { useState } from "react";
 import { useEffect } from "react";
@@ -89,11 +89,11 @@ const PulseComponent = ({ status }) => {
 
 
 const Proposal = () => {
-    const { state } = useLocation()
     const toast = useToast()
-    const initialProposal = state.proposal
+    const { state } = useLocation()
+    const initialProposal = state?.proposal
+    const [proposal, setProposal] = useState([])
 
-    const [proposal, setProposal] = useState(initialProposal)
     const [votingData, setVotingData] = useState([
         { name: 'Vote For', value: 0 },
         { name: 'Vote Against', value: 0 },
@@ -110,6 +110,8 @@ const Proposal = () => {
     const [votingLoading1, setVotingLoading1] = useState(false);
     const [votingLoading2, setVotingLoading2] = useState(false);
     const { daoContract, currentAccount } = useGlobalContext()
+    const { id } = useParams()
+
 
     const voting = async (proposalIndex, voteVar) => {
         (voteVar === true) ? setVotingLoading1(true) : setVotingLoading2(true)
@@ -140,8 +142,61 @@ const Proposal = () => {
         }
     };
 
+    const convertDateAndTime = (timestamp) => {
+        // Remove the '0x' prefix and convert the hex timestamp to a decimal number
+        const decimalTimestamp = parseInt(timestamp.substring(2), 16);
+
+        // Create a new Date object from the decimal timestamp
+        const date = new Date(decimalTimestamp * 1000);
+
+        // Extract the date and time components
+        const year = date.getFullYear();
+        const month = ('0' + (date.getMonth() + 1)).slice(-2);
+        const day = ('0' + date.getDate()).slice(-2);
+        const hours = ('0' + date.getHours()).slice(-2);
+        const minutes = ('0' + date.getMinutes()).slice(-2);
+        const seconds = ('0' + date.getSeconds()).slice(-2);
+
+        // Format the date and time
+        const formattedDateTime = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+
+        return formattedDateTime;
+    };
+
     useEffect(() => {
-        // proposal.voter is an array which has voters address who has voted
+        const getAllProposals = async () => {
+            try {
+                if (daoContract) {
+                    const proposalList = [];
+                    const res = await daoContract.getAllProposals()
+                    // console.log(filteredProposal, 'filteredProposal')
+                    for (let i = 0; i < res.length; i++) {
+                        const proposalId = res[i];
+                        const proposalValue = {
+                            proposalId: i,
+                            description: proposalId[0],
+                            owner: proposalId[1],
+                            amount: Number(proposalId[2]),
+                            isExecuted: proposalId[3],
+                            startTime: convertDateAndTime(proposalId[4]._hex),
+                            endTime: convertDateAndTime(proposalId[5]._hex),
+                            votesFor: Number(proposalId[6]),
+                            votesAgainst: Number(proposalId[7]),
+                            voters: proposalId[8],
+                        }
+                    }
+                    proposalList.push(proposalValue);
+                    setProposal(proposalList[id])
+                }
+            } catch (error) {
+                console.log(error)
+            }
+        }
+        getAllProposals();
+    }, [daoContract, id, location])
+
+
+    useEffect(() => {
         if (proposal.voters.includes(currentAccount)) {
             setHasVoted(true)
         }
@@ -154,25 +209,11 @@ const Proposal = () => {
     const now = new Date()
 
     useEffect(() => {
-        const getAllProposals = async () => {
-
-            try {
-
-                if (daoContract) {
-                    const res = await daoContract.getAllProposals()
-                    // fetch proposal for the given proposalId
-                    const filteredProposal = res.filter((proposal) => proposal.proposalId == initialProposal.proposalId)[0]
-                    if (filteredProposal) {
-                        console.log(filteredProposal, 'filtered updated proposal');
-                        setProposal(filteredProposal);
-                    }
-                }
-            } catch (error) {
-                console.log(error)
-            }
-        }
-        getAllProposals();
-    }, [hasVoted, daoContract, proposal.proposalId])
+        setVotingData([
+            { name: 'Vote For', value: proposal.votesFor },
+            { name: 'Vote Against', value: proposal.votesAgainst },
+        ])
+    }, [id, location, hasVoted])
 
 
     useEffect(() => {
@@ -208,7 +249,10 @@ const Proposal = () => {
             navigate('/connectwallet')
         }
     }, [currentAccount])
-    
+
+    console.log(proposal, 'proposal in proposal')
+
+
     return (
         <>
             <Navbar />
