@@ -2,11 +2,10 @@ import { Box, Button, Container, HStack, Heading, SimpleGrid, Stack, Stat, StatL
 import Navbar from "../components/Navbar"
 import { PieChart, Pie, Sector, Cell, ResponsiveContainer, Legend } from 'recharts';
 import { CheckIcon, CloseIcon, RepeatClockIcon } from "@chakra-ui/icons";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import useGlobalContext from "../hooks/useGlobalContext";
 import { useState } from "react";
 import { useEffect } from "react";
-
 // const data = [
 //     { name: 'Group A', value: 1000 },
 //     { name: 'Group B', value: 200 },
@@ -140,6 +139,15 @@ const Proposal = () => {
         }
     };
 
+    // detect account change, if user tries to disconnect wallet redirect to /connectwallet
+    const navigate = useNavigate();
+    useEffect(() => {
+        if (currentAccount === undefined) {
+            navigate('/connectwallet')
+        }
+    }, [currentAccount])
+
+
     useEffect(() => {
         // proposal.voter is an array which has voters address who has voted
         if (proposal.voters.includes(currentAccount)) {
@@ -202,13 +210,8 @@ const Proposal = () => {
     }, [now])
 
 
-    // detect account change, if user tries to disconnect wallet redirect to /connectwallet
-    useEffect(() => {
-        if (currentAccount === undefined) {
-            navigate('/connectwallet')
-        }
-    }, [currentAccount])
-    
+
+
     return (
         <>
             <Navbar />

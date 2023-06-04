@@ -12,7 +12,7 @@ const DAOContextprovider = ({ children }) => {
     const [chainId, setChainId] = useState("")
     const [currentAccount, setCurrentAccount] = useState("")
     const [errorPage, setErrorPage] = useState(false)
-    const contractAddress = "0x15Bd311B642aa9Aa3fe3aA8F9bB68E1Ef226Ced2"
+    const contractAddress = "0x8FD67C501E49FC60FA702cE9a42AE102f81D6713"
     const [daoContract, setdaoContract] = useState("");
     const [ethBalance, setEthBalance] = useState(0);
     const { ethereum } = window;
