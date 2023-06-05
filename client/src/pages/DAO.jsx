@@ -163,14 +163,14 @@ const DAO = () => {
         }
         getAllProposals();
     }, [daoContract, totalProposal])
-    
+
 
     const [proposalLoading, setProposalLoading] = useState(false);
     const CreateProposal = async (desc, amount) => {
         setProposalLoading(true);
         try {
-            amount=String(amount)
-            let temp=ethers.utils.parseEther(amount)
+            amount = String(amount)
+            let temp = ethers.utils.parseEther(amount)
             const transaction = await daoContract.createProposal(desc, temp);
             await transaction.wait()
             console.log(transaction, 'proposal transaction')
@@ -265,7 +265,7 @@ const DAO = () => {
             </HStack>
             <Flex justifyContent={"center"} w="100vw" m="auto" flexDir={{ base: "column", lg: "row" }} alignItems={"center"} p={{ base: 5, md: 10 }}>
                 {/* members */}
-                <VStack minH="70vh" maxH="700vh" w={{ base: "80%", lg: "25vw" }} overflowY="scroll" className="members-list" border="1px solid" borderColor="gray.400" rounded="md" spacing={0} display={"flex"}>
+                <VStack minH="70vh" maxH="70vh" w={{ base: "80%", lg: "25vw" }} overflowY="scroll" className="members-list" border="1px solid" borderColor="gray.400" rounded="md" spacing={0} display={"flex"}>
                     <Heading size="sm" p={4}>Members</Heading>
                     {members.map((article, index) => (
                         <Fragment key={index}>
@@ -318,7 +318,8 @@ const DAO = () => {
                             // title: Yup.string().required('Title is required'),
                             description: Yup.string().required('Description is required'),
                             askForPayment: Yup.boolean(),
-                            amount: Yup.number().required('Amount is required')
+                            // amount can't be less than zero
+                            amount: Yup.number().min(0, 'Amount can not be less than zero')
                         })}
 
                         onSubmit={(value, action) => {
@@ -473,15 +474,16 @@ const DAO = () => {
             </Flex>
             <TableContainer m="auto" maxW="80vw" mb="4" border="1px" p="2" pb="0" rounded="lg">
                 <Heading size="md" p={4} textAlign={"center"}>Member Record</Heading>
-                <Table variant='simple' mb="6">
+                <Table variant='simple' mb="6" size="lg">
                     {/* <TableCaption>Imperial to metric conversion factors</TableCaption> */}
 
                     <Thead>
                         <Tr>
                             <Th>Address</Th>
+                            <Th>Title</Th>
+                            <Th textAlign={"center"}>Proposal/Loan</Th>
                             <Th textAlign={"right"}>Status</Th>
-                            <Th textAlign={"right"}>Start time</Th>
-                            <Th textAlign={"right"}>End Time</Th>
+                            <Th textAlign={"right"}>Voting Percentage</Th>
                         </Tr>
                     </Thead>
                     {fetchedProposals.length === 0 && (
@@ -496,18 +498,31 @@ const DAO = () => {
                             fetchedProposals.map((proposal, index) => (
                                 <Tr key={index}>
                                     <Td><Link to={`/proposal/${proposal.proposalId}`}
-                                        
+
                                     >{proposal.owner.toString().slice(0, 5) + "..." + proposal.owner.toString().slice(-4)}</Link></Td>
                                     {/* <Td >{proposal.amount}</Td> */}
                                     {/*  <PulseComponent status={{isExecuted}===true ? "completed" : {currTime}>={endTime} ?  "expired" :"pending"} /> */}
 
+                                    <Td>
+                                        <Text>
+                                            {proposal.description.length > 20
+                                                ? proposal.description.slice(0, 20) + "..."
+                                                : proposal.description}
+                                        </Text>
+                                    </Td>
+                                    <Td textAlign={"left"}>{proposal.amount === 0 ?
+                                        <Badge colorScheme='blue' w="full" textAlign={"center"}>General Proposal</Badge> :  <Badge w="100%"
+                                        textAlign={"center"} colorScheme='orange'>Loan Request</Badge>}</Td>
                                     <Td textAlign={"right"}>{proposal.isExecuted ? <Badge colorScheme='green'>Executed</Badge> : currTime >= toDate(proposal.endTime) ? <Badge colorScheme='red'>Expired</Badge> : <Badge colorScheme='yellow'>Pending</Badge>}</Td>
+                                    <Td textAlign="right">
+                                        {proposal.votesFor + proposal.votesAgainst === 0
+                                            ? "No votes cast"
+                                            : `${((proposal.votesFor / (proposal.votesFor + proposal.votesAgainst)) * 100).toFixed(0)}%`}
+                                    </Td>
                                     {/* <Td textAlign={"right"}>{proposal.endTime}</Td> */}
 
 
                                     {/* <Td textAlign={"right"}>{proposal.isExecuted ? "Execution completed": {currTime}>=Date(proposal.endTime) ? "Expired":"Pending"}</Td> */}
-                                    <Td textAlign={"right"}>{proposal.startTime}</Td>
-                                    <Td textAlign={"right"}>{proposal.endTime}</Td>
                                 </Tr>))
                         }
                     </Tbody>

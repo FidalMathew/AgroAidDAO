@@ -186,9 +186,9 @@ const Proposal = () => {
                         }
                         proposalList.push(proposalValue);
                     }
-                    proposalList[id].amount=Number(proposalList[id].amount)/10**18
+                    proposalList[id].amount = Number(proposalList[id].amount) / 10 ** 18
                     console.log(proposalList[id].voters)
-                    console.log("this is my ",currentAccount)
+                    console.log("this is my ", currentAccount)
                     setProposal(proposalList[id]);
                     setEndTime(endTime)
                 }
@@ -197,29 +197,24 @@ const Proposal = () => {
             }
         }
         getAllProposals();
-    }, [daoContract, location, id,currentAccount])
+    }, [daoContract, location, id, currentAccount, hasVoted])
 
 
     useEffect(() => {
-        const callFuncion=()=>{
-            if(currentAccount && proposal.voters!=undefined)
-            {
-                if(proposal.voters.includes(currentAccount))
-                {
-                    setHasVoted(true)
-                }
-                else
-                {
-
-                    console.log(hasVoted,"Has voted")
-                    setHasVoted(false)
-                }
+        if (proposal.voters !== undefined) {
+            const lowercaseVoters = proposal.voters.map((voter) => voter.toLowerCase());
+            console.log(proposal.voters.includes(currentAccount), 'has voted or not 1')
+            console.log(lowercaseVoters, 'has voted or not 1')
+            console.log(expired, 'has voted or not expired')
+            // set hasVoted based on if the current account is in the voters array
+            if (lowercaseVoters.includes(currentAccount)) {
+                setHasVoted(true)
             }
-           
+            else {
+                setHasVoted(false)
+            }
         }
-        callFuncion();
-
-    }, [proposal]);
+    }, [proposal, location, id, hasVoted]);
 
 
     const end = new Date(proposal.endTime)
@@ -232,38 +227,34 @@ const Proposal = () => {
         ])
     }, [id, location, hasVoted, proposal])
 
-    const executeProposals=async(prop)=>{
-        if(daoContract)
-        {
-            try
-            {
-                const res=await daoContract.executeProposal(prop);
+    const executeProposals = async (prop) => {
+        if (daoContract) {
+            try {
+                const res = await daoContract.executeProposal(prop);
                 console.log(res)
             }
-            catch(err)
-            {
+            catch (err) {
                 console.log(err)
-            }   
+            }
         }
     }
     useEffect(() => {
- 
 
-            if (end < now) 
-            {
-                setExpired(true)
-            }
-            else {
-                const daysRemaining = (Math.ceil((end - now) / (1000 * 60 * 60 * 24)))
-                setDayRem(daysRemaining)
-            }
-            if (proposal.isExecuted) {
-                setIsExecuted(true);
-            }
-            setCurrTime(now);
-            setEndTime(end);
-      
-    }, [now,end])
+
+        if (end < now) {
+            setExpired(true)
+        }
+        else {
+            const daysRemaining = (Math.ceil((end - now) / (1000 * 60 * 60 * 24)))
+            setDayRem(daysRemaining)
+        }
+        if (proposal.isExecuted) {
+            setIsExecuted(true);
+        }
+        setCurrTime(now);
+        setEndTime(end);
+
+    }, [now, end])
 
     useEffect(() => {
         if (proposal !== {}) {
@@ -285,28 +276,23 @@ const Proposal = () => {
             navigate('/connectwallet')
         }
     }, [currentAccount])
-    const[canExecute,setCanExecute]=useState(false);
-    useEffect(()=>{
-        const disableButton=()=>
-        {
-            if(expired)
-            {
-                if(proposal.votesFor>proposal.votesAgainst)
-                {
+    const [canExecute, setCanExecute] = useState(false);
+    useEffect(() => {
+        const disableButton = () => {
+            if (expired) {
+                if (proposal.votesFor > proposal.votesAgainst) {
                     setCanExecute(true);
                 }
-                else
-                {
+                else {
                     setCanExecute(false);
                 }
             }
-            else
-            {
+            else {
                 setCanExecute(false);
             }
         }
         disableButton();
-    },[expired,proposal])
+    }, [expired, proposal])
 
     return (
         <>
@@ -422,12 +408,12 @@ const Proposal = () => {
                                         colorScheme="teal"
                                         rightIcon={<RepeatClockIcon color="yellow.500" />} variant="outline" size="md" w="full" mx={'auto'}
                                         isDisabled={!expired || isExecuted || !canExecute}
-                                        onClick={() =>  executeProposals(id)}
+                                        onClick={() => executeProposals(id)}
                                     >
                                         Execute Proposal
                                     </Button>
                                 </Tooltip>
-z                            </Stack>
+                                z                            </Stack>
                         </Stack>
                     </Stack>
                 </VStack>
