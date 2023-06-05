@@ -472,7 +472,7 @@ const DAO = () => {
                     ))}
                 </VStack> */}
             </Flex>
-            <TableContainer m="auto" maxW="80vw" mb="4" border="1px" p="2" pb="0" rounded="lg">
+            <TableContainer m="auto" maxW="80vw" mb="4" border="1px" p="2" pb="0" rounded="lg" maxH={"80vh"} overflowY={"scroll"} className="members-list">
                 <Heading size="md" p={4} textAlign={"center"}>Member Record</Heading>
                 <Table variant='simple' mb="6" size="lg">
                     {/* <TableCaption>Imperial to metric conversion factors</TableCaption> */}
@@ -497,9 +497,12 @@ const DAO = () => {
                         {
                             fetchedProposals.map((proposal, index) => (
                                 <Tr key={index}>
-                                    <Td><Link to={`/proposal/${proposal.proposalId}`}
-
-                                    >{proposal.owner.toString().slice(0, 5) + "..." + proposal.owner.toString().slice(-4)}</Link></Td>
+                                    <Td><Link to={`/proposal/${proposal.proposalId}`}>
+                                        <Text as="u">
+                                            {proposal.owner.toString().slice(0, 5) + "..." + proposal.owner.toString().slice(-4)}
+                                        </Text>
+                                    </Link>
+                                    </Td>
                                     {/* <Td >{proposal.amount}</Td> */}
                                     {/*  <PulseComponent status={{isExecuted}===true ? "completed" : {currTime}>={endTime} ?  "expired" :"pending"} /> */}
 
@@ -511,8 +514,8 @@ const DAO = () => {
                                         </Text>
                                     </Td>
                                     <Td textAlign={"left"}>{proposal.amount === 0 ?
-                                        <Badge colorScheme='blue' w="full" textAlign={"center"}>General Proposal</Badge> :  <Badge w="100%"
-                                        textAlign={"center"} colorScheme='orange'>Loan Request</Badge>}</Td>
+                                        <Badge colorScheme='blue' w="full" textAlign={"center"}>General Proposal</Badge> : <Badge w="100%"
+                                            textAlign={"center"} colorScheme='orange'>Loan Request</Badge>}</Td>
                                     <Td textAlign={"right"}>{proposal.isExecuted ? <Badge colorScheme='green'>Executed</Badge> : currTime >= toDate(proposal.endTime) ? <Badge colorScheme='red'>Expired</Badge> : <Badge colorScheme='yellow'>Pending</Badge>}</Td>
                                     <Td textAlign="right">
                                         {proposal.votesFor + proposal.votesAgainst === 0

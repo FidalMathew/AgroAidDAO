@@ -1,5 +1,5 @@
-import { Avatar, Box, Flex, Grid, Heading, Stack, Stat, StatLabel, StatNumber, Text, VStack, useColorModeValue, chakra, HStack, Divider } from '@chakra-ui/react'
-import { useParams } from 'react-router-dom';
+import { Avatar, Box, Flex, Grid, Heading, Stack, Stat, StatLabel, StatNumber, Text, VStack, useColorModeValue, chakra, HStack, Divider, TableContainer, Table, TableCaption, Thead, Tr, Td, Tfoot, Th, Tbody, Button, Badge } from '@chakra-ui/react'
+import { Link, useLocation, useParams } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import { useEffect } from 'react';
 import useGlobalContext from '../hooks/useGlobalContext';
@@ -28,7 +28,9 @@ function StatsCard(props) {
 
 const Profile = () => {
     const { id } = useParams()
-    const { daoContract, ethBalance } = useGlobalContext()
+    const { daoContract, ethBalance, currentAccount } = useGlobalContext()
+    const location = useLocation()
+    const [proposal, setProposal] = useState({})
 
     const [agrotokenBalance, setAgrotokenBalance] = useState(0)
     const [user, setUser] = useState({
@@ -65,11 +67,64 @@ const Profile = () => {
         }
     }, [daoContract])
 
+    const convertDateAndTime = (timestamp) => {
+        const decimalTimestamp = parseInt(timestamp.substring(2), 16);
+        const date = new Date(decimalTimestamp * 1000);
+        const year = date.getFullYear();
+        const month = ('0' + (date.getMonth() + 1)).slice(-2);
+        const day = ('0' + date.getDate()).slice(-2);
+        const hours = ('0' + date.getHours()).slice(-2);
+        const minutes = ('0' + date.getMinutes()).slice(-2);
+        const seconds = ('0' + date.getSeconds()).slice(-2);
+
+        const formattedDateTime = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+
+        return formattedDateTime;
+    };
+
+    useEffect(() => {
+        const getAllProposals = async () => {
+            try {
+                if (daoContract) {
+                    const proposalList = [];
+                    const res = await daoContract.getAllProposals()
+
+                    for (let i = 0; i < res.length; i++) {
+                        const proposalId = res[i];
+                        const proposalValue = {
+                            proposalId: i,
+                            description: proposalId[0],
+                            owner: proposalId[1],
+                            amount: Number(proposalId[2]),
+                            isExecuted: proposalId[3],
+                            startTime: convertDateAndTime(proposalId[4]._hex),
+                            endTime: convertDateAndTime(proposalId[5]._hex),
+                            votesFor: Number(proposalId[6]),
+                            votesAgainst: Number(proposalId[7]),
+                            voters: proposalId[8],
+                        }
+                        proposalList.push(proposalValue);
+                    }
+
+                    const proposalOfCurrentUser = proposalList.filter((proposal) => {
+                        return proposal.owner.toLowerCase() === currentAccount;
+                    })
+                    console.log(proposalOfCurrentUser, 'proposalOfCurrentUser')
+
+                    setProposal(proposalOfCurrentUser)
+                }
+            } catch (error) {
+                console.log(error)
+            }
+        }
+        getAllProposals();
+    }, [daoContract, location, id, currentAccount])
+
     return (
         <>
             <Navbar />
             <Heading size="xl" fontWeight="semibold" textAlign={"center"}>Profile</Heading>
-            <Box minH="100vh" w="100vw" p="16">
+            <Box minH="80vh" w="100vw" p="16">
                 <Flex justifyContent="center" flexDir={{ base: "column", lg: "row" }}>
                     <Stack h="70vh" mb="5" w={{ base: "100%", lg: "30vw" }} border="1px solid" borderColor={useColorModeValue('gray.800', 'gray.500')} rounded="xl">
                         <VStack spacing="6" justifyContent={"center"} alignItems={"center"} h="60%" w="100%" rounded="xl" mb="2">
@@ -81,12 +136,13 @@ const Profile = () => {
                             <VStack direction='column' h='100px' w="100%" p={4} spacing={"4"}>
                                 <Text>Reputation: <chakra.span as="b">{user.reputation}</chakra.span> </Text>
                                 <Divider orientation='horizontal' />
-                                <Text>Chakra Ui</Text>
+                                <Text>Voting Power: <chakra.span as="b">{"0"}</chakra.span> </Text>
                                 <Divider orientation='horizontal' />
-                                <Text>Chakra UI</Text>
+                                <Text>Voting Power: <chakra.span as="b">{"0"}</chakra.span> </Text>
                                 <Divider orientation='horizontal' />
-                                <Text>Chakra UI</Text>
+                                <Text>Voting Power: <chakra.span as="b">{"0"}</chakra.span> </Text>
                                 <Divider orientation='horizontal' />
+
                             </VStack>
                         </VStack>
                         {/* <Box border="1px solid" borderColor={useColorModeValue('gray.800', 'gray.500')} rounded="lg" w='90%' h='10vh'>
@@ -99,8 +155,45 @@ const Profile = () => {
                             <StatsCard title={'Your ETH Balance'} stat={ethBalance} />
                             <StatsCard title={'Country'} stat={country} />
                         </Stack>
-                        <Box border="1px solid" borderColor={useColorModeValue('gray.800', 'gray.500')} rounded="lg" w='100%' h='35vh'>
+                        <Box border="1px solid" borderColor={useColorModeValue('gray.800', 'gray.500')} rounded="lg" w='100%' h='52vh' className='members-list' overflowY={"scroll"}>
+                            <Heading size="md" p="6" pb="1" textAlign={"center"}>Your Proposals</Heading>
+                            <TableContainer w="100%" minH={{ base: "50vh", lg: "40vh" }}>
+                                <Table variant='simple' size={"lg"}>
+                                    <Thead>
+                                        <Tr>
+                                            <Th>Proposal Description</Th>
+                                            <Th textAlign={"left"}>Amount</Th>
+                                            <Th textAlign={"center"}>Status</Th>
+                                            <Th textAlign={"center"}>Pay</Th>
+                                        </Tr>
+                                    </Thead>
+                                    <Tbody>
+                                        {/* proposal is undefined initially and then array of objects */}
+                                        {proposal && Array.isArray(proposal) && proposal.map((item, index) => {
+                                            return (
+                                                <Tr key={index}>
+                                                    <Link to={`/proposal/${item.proposalId}`}><Td>{item.description.length > 20
+                                                        ? item.description.slice(0, 20) + "..."
+                                                        : item.description
+                                                    }</Td></Link>
+                                                    <Td textAlign="left">{item.amount}</Td>
+                                                    <Td textAlign="center">
+                                                        {item.isExecuted ? (
+                                                            <Badge colorScheme="green">Executed</Badge>
+                                                        ) : (
+                                                            <Badge colorScheme="red">Not Executed</Badge>
+                                                        )}
+                                                    </Td>
+                                                    <Td textAlign="center">
+                                                        <Button colorScheme="teal" size="sm">Pay</Button>
+                                                    </Td>
+                                                </Tr>
+                                            );
+                                        })}
 
+                                    </Tbody>
+                                </Table>
+                            </TableContainer>
                         </Box>
                     </Grid>
                 </Flex>

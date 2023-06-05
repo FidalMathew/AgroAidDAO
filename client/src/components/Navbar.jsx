@@ -17,6 +17,23 @@ import {
   MenuButton,
   MenuList,
   MenuItem,
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalCloseButton,
+  ModalBody,
+  ModalFooter,
+  ModalHeader,
+  TableContainer,
+  Table,
+  TableCaption,
+  Thead,
+  Tr,
+  Th,
+  Tbody,
+  Td,
+  Tfoot,
+  Badge,
 } from '@chakra-ui/react';
 import {
   HamburgerIcon,
@@ -31,7 +48,9 @@ import { useNavigate, Link } from 'react-router-dom';
 
 export default function Navbar() {
   const { isOpen, onToggle } = useDisclosure();
+  const defaulterModal = useDisclosure()
   const navigate = useNavigate()
+
 
   const { connectWallet, currentAccount, disconnectWallet } = useGlobalContext()
   // console.log(currentAccount, 'accountss')
@@ -91,16 +110,27 @@ export default function Navbar() {
             spacing={6}>
 
             <Button
-              as={'a'}
               display={{ base: 'none', md: 'inline-flex' }}
               fontSize={'sm'}
               fontWeight={600}
-              href={'/leaderboard'}
               colorScheme='teal'
               variant={'outline'}
+              onClick={defaulterModal.onOpen}
             >
-              Leaderboard
+              Defaulters
             </Button>
+
+            <Link to="/leaderboard">
+              <Button
+                display={{ base: 'none', md: 'inline-flex' }}
+                fontSize={'sm'}
+                fontWeight={600}
+                colorScheme='teal'
+                variant={'outline'}
+              >
+                Leaderboard
+              </Button>
+            </Link>
             {!currentAccount ?
               <Button
                 onClick={connectWallet}
@@ -146,6 +176,66 @@ export default function Navbar() {
           <MobileNav />
         </Collapse>
       </Box>
+
+      <Modal onClose={defaulterModal.onClose} size={'2xl'} isOpen={defaulterModal.isOpen} isCentered>
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>DAO Defaulters</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            <TableContainer>
+              <Table variant='simple'>
+                {/* <TableCaption>Imperial to metric conversion factors</TableCaption> */}
+                <Thead>
+                  <Tr>
+                    <Th>Addresses</Th>
+                    <Th>Loan</Th>
+                    <Th>Loan</Th>
+                    <Th textAlign={"right"}>Status</Th>
+                  </Tr>
+                </Thead>
+                <Tbody>
+                  <Tr>
+                    <Td>0x3ri3h....cBa</Td>
+                    <Td>
+                      <Text>
+                        {"For the purchase of 10 acres of land in the village of".slice(0, 20) + "..."}
+                      </Text>
+                    </Td>
+                    <Td>0.001 ETH</Td>
+                    <Td textAlign={"right"}>
+                      <Badge 
+                        colorScheme="red"
+                      >
+                        Defaulter
+                      </Badge>
+                    </Td>
+                  </Tr>
+                  <Tr>
+                    <Td>0x3ri3h....cBa</Td>
+                    <Td>
+                      <Text>
+                        {"For the purchase of 10 acres of land in the village of".slice(0, 20) + "..."}
+                      </Text>
+                    </Td>
+                    <Td>0.001 ETH</Td>
+                    <Td textAlign={"right"}>
+                      <Badge 
+                        colorScheme="green"
+                      >
+                        Paid
+                      </Badge>
+                    </Td>
+                  </Tr>
+                </Tbody>
+              </Table>
+            </TableContainer>
+          </ModalBody>
+          <ModalFooter>
+            {/* <Button onClick={defaulterModal.onClose}>Close</Button> */}
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
     </>
   );
 }
