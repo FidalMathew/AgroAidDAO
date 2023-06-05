@@ -5,6 +5,7 @@ import { useEffect } from 'react';
 import useGlobalContext from '../hooks/useGlobalContext';
 import { useState } from 'react';
 import useCurrentLocation from '../hooks/useCurrentLocation';
+import { ethers } from 'ethers';
 
 function StatsCard(props) {
     const { title, stat } = props;
@@ -120,6 +121,22 @@ const Profile = () => {
         getAllProposals();
     }, [daoContract, location, id, currentAccount])
 
+    const payLoan = async (amount) => {
+        try {
+            if (daoContract) {
+                // console.log(item.amount)
+                let ethVal = amount / Math.pow(10, 18).toString()
+                ethVal = ethVal.toString()
+                // console.log(ethVal.toString())
+                const res = await daoContract.loanPayBack({ from: currentAccount, value: ethers.utils.parseEther(ethVal) })
+                console.log(res)
+            }
+        } catch (error) {
+            console.log(error)
+        }
+    }
+
+
     return (
         <>
             <Navbar />
@@ -176,7 +193,7 @@ const Profile = () => {
                                                         ? item.description.slice(0, 20) + "..."
                                                         : item.description
                                                     }</Td></Link>
-                                                    <Td textAlign="left">{item.amount}</Td>
+                                                    <Td textAlign="left">{item.amount / Math.pow(10, 18)}</Td>
                                                     <Td textAlign="center">
                                                         {item.isExecuted ? (
                                                             <Badge colorScheme="green">Executed</Badge>
@@ -184,9 +201,16 @@ const Profile = () => {
                                                             <Badge colorScheme="red">Not Executed</Badge>
                                                         )}
                                                     </Td>
-                                                    <Td textAlign="center">
-                                                        <Button colorScheme="teal" size="sm">Pay</Button>
-                                                    </Td>
+                                                    {
+                                                        item.amount > 0 ?
+                                                            <Td textAlign="center">
+                                                                <Button colorScheme="teal" size="sm" onClick={() => payLoan(item.amount)}>Pay</Button>
+                                                            </Td>
+                                                            :
+                                                            <Td textAlign="center">
+                                                                <Button colorScheme="teal" size="sm" disabled>Paid</Button>
+                                                            </Td>
+                                                    }
                                                 </Tr>
                                             );
                                         })}
