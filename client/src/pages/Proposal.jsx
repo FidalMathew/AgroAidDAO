@@ -186,9 +186,10 @@ const Proposal = () => {
                         }
                         proposalList.push(proposalValue);
                     }
-                    console.log(proposalList[id], 'proposalList')
+                    proposalList[id].amount=Number(proposalList[id].amount)/10**18
+                    console.log(proposalList[id].voters)
+                    console.log("this is my ",currentAccount)
                     setProposal(proposalList[id]);
-
                     setEndTime(endTime)
                 }
             } catch (error) {
@@ -196,16 +197,29 @@ const Proposal = () => {
             }
         }
         getAllProposals();
-    }, [daoContract, location, id])
+    }, [daoContract, location, id,currentAccount])
 
 
     useEffect(() => {
-        if (proposal && proposal.voters && proposal.voters.includes(currentAccount)) {
-            setHasVoted(true);
-        } else {
-            setHasVoted(false);
+        const callFuncion=()=>{
+            if(currentAccount && proposal.voters!=undefined)
+            {
+                if(proposal.voters.includes(currentAccount))
+                {
+                    setHasVoted(true)
+                }
+                else
+                {
+
+                    console.log(hasVoted,"Has voted")
+                    setHasVoted(false)
+                }
+            }
+           
         }
-    }, [proposal, currentAccount]);
+        callFuncion();
+
+    }, [proposal]);
 
 
     const end = new Date(proposal.endTime)
@@ -218,11 +232,25 @@ const Proposal = () => {
         ])
     }, [id, location, hasVoted, proposal])
 
-
+    const executeProposals=async(prop)=>{
+        if(daoContract)
+        {
+            try
+            {
+                const res=await daoContract.executeProposal(prop);
+                console.log(res)
+            }
+            catch(err)
+            {
+                console.log(err)
+            }   
+        }
+    }
     useEffect(() => {
  
 
-            if (end < now) {
+            if (end < now) 
+            {
                 setExpired(true)
             }
             else {
@@ -235,18 +263,17 @@ const Proposal = () => {
             setCurrTime(now);
             setEndTime(end);
       
-    }, [proposal])
+    }, [now,end])
 
     useEffect(() => {
         if (proposal !== {}) {
-
             if (end > now) {
                 const minutes = Math.ceil((end - now) / (1000 * 60))
                 setTimeLeft(minutes);
             }
             else {
                 setTimeLeft(0);
-                setExpired(true);
+                // setExpired(true);
             }
         }
     }, [now])
@@ -258,9 +285,28 @@ const Proposal = () => {
             navigate('/connectwallet')
         }
     }, [currentAccount])
-
-    console.log(proposal, 'proposal in dimag')
-
+    const[canExecute,setCanExecute]=useState(false);
+    useEffect(()=>{
+        const disableButton=()=>
+        {
+            if(expired)
+            {
+                if(proposal.votesFor>proposal.votesAgainst)
+                {
+                    setCanExecute(true);
+                }
+                else
+                {
+                    setCanExecute(false);
+                }
+            }
+            else
+            {
+                setCanExecute(false);
+            }
+        }
+        disableButton();
+    },[expired,proposal])
 
     return (
         <>
@@ -375,12 +421,13 @@ const Proposal = () => {
                                     <Button
                                         colorScheme="teal"
                                         rightIcon={<RepeatClockIcon color="yellow.500" />} variant="outline" size="md" w="full" mx={'auto'}
-                                        isDisabled={!expired || isExecuted}
+                                        isDisabled={!expired || isExecuted || !canExecute}
+                                        onClick={() =>  executeProposals(id)}
                                     >
                                         Execute Proposal
                                     </Button>
                                 </Tooltip>
-                            </Stack>
+z                            </Stack>
                         </Stack>
                     </Stack>
                 </VStack>

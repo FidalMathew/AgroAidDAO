@@ -169,7 +169,9 @@ const DAO = () => {
     const CreateProposal = async (desc, amount) => {
         setProposalLoading(true);
         try {
-            const transaction = await daoContract.createProposal(desc, amount);
+            amount=String(amount)
+            let temp=ethers.utils.parseEther(amount)
+            const transaction = await daoContract.createProposal(desc, temp);
             await transaction.wait()
             console.log(transaction, 'proposal transaction')
             toast({
