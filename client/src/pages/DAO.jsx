@@ -97,9 +97,6 @@ const DAO = () => {
             }).catch((err) => {
                 console.log(err);
             });
-
-
-
         }
     }, [daoContract])
 
@@ -163,7 +160,7 @@ const DAO = () => {
         }
         getAllProposals();
     }, [daoContract, totalProposal])
-    
+
 
     const [proposalLoading, setProposalLoading] = useState(false);
     const CreateProposal = async (desc, amount) => {
@@ -471,15 +468,15 @@ const DAO = () => {
             </Flex>
             <TableContainer m="auto" maxW="80vw" mb="4" border="1px" p="2" pb="0" rounded="lg">
                 <Heading size="md" p={4} textAlign={"center"}>Member Record</Heading>
-                <Table variant='simple' mb="6">
+                <Table variant='simple' mb="6" size="lg">
                     {/* <TableCaption>Imperial to metric conversion factors</TableCaption> */}
 
                     <Thead>
                         <Tr>
                             <Th>Address</Th>
+                            <Th>Title</Th>
                             <Th textAlign={"right"}>Status</Th>
-                            <Th textAlign={"right"}>Start time</Th>
-                            <Th textAlign={"right"}>End Time</Th>
+                            <Th textAlign={"right"}>Voting Percentage</Th>
                         </Tr>
                     </Thead>
                     {fetchedProposals.length === 0 && (
@@ -494,18 +491,28 @@ const DAO = () => {
                             fetchedProposals.map((proposal, index) => (
                                 <Tr key={index}>
                                     <Td><Link to={`/proposal/${proposal.proposalId}`}
-                                        
+
                                     >{proposal.owner.toString().slice(0, 5) + "..." + proposal.owner.toString().slice(-4)}</Link></Td>
                                     {/* <Td >{proposal.amount}</Td> */}
                                     {/*  <PulseComponent status={{isExecuted}===true ? "completed" : {currTime}>={endTime} ?  "expired" :"pending"} /> */}
 
+                                    <Td>
+                                        <Text>
+                                            {proposal.description.length > 20
+                                                ? proposal.description.slice(0, 20) + "..."
+                                                : proposal.description}
+                                        </Text>
+                                    </Td>
                                     <Td textAlign={"right"}>{proposal.isExecuted ? <Badge colorScheme='green'>Executed</Badge> : currTime >= toDate(proposal.endTime) ? <Badge colorScheme='red'>Expired</Badge> : <Badge colorScheme='yellow'>Pending</Badge>}</Td>
+                                    <Td textAlign="right">
+                                        {proposal.votesFor + proposal.votesAgainst === 0
+                                            ? "No votes cast"
+                                            : `${((proposal.votesFor / (proposal.votesFor + proposal.votesAgainst)) * 100).toFixed(0)}%`}
+                                    </Td>
                                     {/* <Td textAlign={"right"}>{proposal.endTime}</Td> */}
 
 
                                     {/* <Td textAlign={"right"}>{proposal.isExecuted ? "Execution completed": {currTime}>=Date(proposal.endTime) ? "Expired":"Pending"}</Td> */}
-                                    <Td textAlign={"right"}>{proposal.startTime}</Td>
-                                    <Td textAlign={"right"}>{proposal.endTime}</Td>
                                 </Tr>))
                         }
                     </Tbody>

@@ -200,12 +200,12 @@ const Proposal = () => {
 
 
     useEffect(() => {
-        if (proposal && proposal.voters && proposal.voters.includes(currentAccount)) {
-            setHasVoted(true);
-        } else {
-            setHasVoted(false);
+        if(proposal !== undefined){
+            console.log(proposal.voters.includes(currentAccount), 'has voted or not 1')
+            console.log(proposal.voters, 'has voted or not 1')
+            console.log(expired, 'has voted or not expired')
         }
-    }, [proposal, currentAccount]);
+    }, [proposal, location, id]);
 
 
     const end = new Date(proposal.endTime)
