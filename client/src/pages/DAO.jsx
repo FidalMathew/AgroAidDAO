@@ -177,7 +177,7 @@ const DAO = () => {
                 isClosable: true,
             });
         } catch (error) {
-            console.log(error);
+            console.log(error, 'create proposal error');
             toast({
                 title: "Error creating proposal.",
                 description: "Please try again.",

@@ -200,7 +200,7 @@ const Proposal = () => {
 
 
     useEffect(() => {
-        if(proposal !== undefined){
+        if(proposal.voters !==undefined){
             console.log(proposal.voters.includes(currentAccount), 'has voted or not 1')
             console.log(proposal.voters, 'has voted or not 1')
             console.log(expired, 'has voted or not expired')
