@@ -33,12 +33,9 @@ import { ethers } from "ethers";
 const DAO = () => {
     const toast = useToast()
     const [checked, setChecked] = useState(false)
-    useEffect(() => {
-        console.log(checked, 'checked')
-    }, [checked])
 
 
-    const { daoContract, currentAccount } = useGlobalContext();
+    const { daoContract, fetchAmount } = useGlobalContext();
 
     const [daoBalance, setDaoBalance] = useState(0);
     const [daoToken, setDaoToken] = useState(0);
@@ -58,13 +55,6 @@ const DAO = () => {
     useEffect(() => {
         setCurrTime(now)
     }, [now])
-
-
-
-
-    useEffect(() => {
-        console.log(members[0], 'members')
-    }, [members])
 
     useEffect(() => {
         if (daoContract) {
@@ -105,7 +95,6 @@ const DAO = () => {
 
     const convertDateAndTime = (timestamp) => {
         // Remove the '0x' prefix and convert the hex timestamp to a decimal number
-        console.log(timestamp, 'timestamp')
         const decimalTimestamp = parseInt(timestamp.substring(2), 16);
 
         // Create a new Date object from the decimal timestamp
@@ -135,7 +124,7 @@ const DAO = () => {
                 if (daoContract) {
                     const proposalList = [];
                     const res = await daoContract.getAllProposals()
-                    console.log(res, 'res-proposals-------fetch')
+
                     for (let i = 0; i < res.length; i++) {
                         const proposalId = res[i];
                         const proposalValue = {
@@ -150,10 +139,10 @@ const DAO = () => {
                             votesAgainst: Number(proposalId[8]),
                             voters: proposalId[9],
                         }
-                        console.log("endTime", convertDateAndTime(proposalId[5]._hex))
+
                         proposalList.push(proposalValue);
                     }
-                    console.log(proposalList, 'proposalList')
+
                     setFetchedProposals(proposalList);
 
                     setEndTime(endTime)
@@ -174,7 +163,7 @@ const DAO = () => {
             let temp = ethers.utils.parseEther(amount)
             const transaction = await daoContract.createProposal(desc, temp);
             await transaction.wait()
-            console.log(transaction, 'proposal transaction')
+
             toast({
                 // proposal creation
                 title: "Proposal created.",
@@ -202,10 +191,7 @@ const DAO = () => {
     useEffect(() => {
 
         const onNewProposal = (description, owner, amount, isExecuted, startTime, endTime, votesFor, votesAgainst, voters) => {
-            // console.log("NewCandidate", candAddress, name, proposal, votes);
-            // console.log("Proposal updated successfully",
-            //     description, owner, Number(amount), isExecuted, convertDateAndTime(startTime._hex), convertDateAndTime(endTime._hex), Number(votesFor), Number(votesAgainst), voters
-            // )
+
 
             setFetchedProposals(prevState => [
                 ...prevState,
@@ -235,7 +221,6 @@ const DAO = () => {
             }
         };
     }, [daoContract]);
-
 
     return (
         <>
