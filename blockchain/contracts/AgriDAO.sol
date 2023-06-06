@@ -12,7 +12,7 @@ contract AgroDAO {
     uint256 private constant INITIAL_TOKEN_AMOUNT = 1000000000;
     address private immutable maintainer;
     uint256 private constant INITIAL_USER_AMOUNT = 1000;
-    uint256 private constant LOAN_TIME = 20 seconds;
+    uint256 private constant LOAN_TIME = 30 seconds;
     address public agriTokenAddress;
 
     // address public chainLinkAddress;
@@ -30,11 +30,7 @@ contract AgroDAO {
         uint256 timestamp;
     }
 
-    uint256 public a;
-
-    function getMsgValue() public payable {
-        a = msg.value;
-    }
+    uint256 counter;
 
     // join the dao
     mapping(address => Farmer) public members;
@@ -48,14 +44,8 @@ contract AgroDAO {
     constructor() payable {
         agriToken = new Token(INITIAL_TOKEN_AMOUNT, address(this));
         maintainer = msg.sender;
-        // loanTimer[msg.sender]=block.timestamp+20 seconds;
-        // members[msg.sender] = Farmer(msg.sender,100, "1", "1",0);
-        // daoMembers.push(msg.sender);
-        // daoMembers.push(msg.sender);
-        // chainC = new APIConsumer();
-        // mint the tokens first
+
         agriTokenAddress = address(agriToken);
-        // chainLinkAddress = address(chainC);
     }
 
     function contractTokenBalance() public view returns (uint256) {
@@ -89,7 +79,7 @@ contract AgroDAO {
             "Already part of the DAO"
         );
 
-        require(msg.value >= 0.01 ether, "Please send exactly 0.01 ETH");
+        require(msg.value >= 0.002 ether, "Please send exactly 0.002 ETH");
 
         members[user] = Farmer(
             user,
@@ -110,10 +100,10 @@ contract AgroDAO {
 
     // transfer token on funding the dao
     // transfer token to funder
-    function transfer(address receiver, uint256 numTokens)
-        public
-        returns (bool)
-    {
+    function transfer(
+        address receiver,
+        uint256 numTokens
+    ) public returns (bool) {
         uint256 contractCurrTokenBalance = contractTokenBalance();
         require(
             numTokens <= contractCurrTokenBalance,
@@ -143,6 +133,7 @@ contract AgroDAO {
     }
 
     struct proposal {
+        uint256 proposalIndex;
         string description;
         address owner;
         uint256 amount;
@@ -182,12 +173,13 @@ contract AgroDAO {
         uint256 endTime,
         uint256 votesFor,
         uint256 votesAgainst,
-        address [] voters
+        address[] voters
     );
 
-    function createProposal(string memory _description, uint256 _amount)
-        public
-    {
+    function createProposal(
+        string memory _description,
+        uint256 _amount
+    ) public {
         // reduce agroToken
         require(getUserBalance(msg.sender) >= 900, "Insufficient tokens");
         require(
@@ -199,6 +191,7 @@ contract AgroDAO {
         uint256 endTime = startTime + _duration;
 
         proposal memory newProposal;
+        newProposal.proposalIndex = counter;
         newProposal.description = _description;
         newProposal.owner = msg.sender;
         newProposal.amount = _amount;
@@ -207,6 +200,8 @@ contract AgroDAO {
         newProposal.endTime = endTime;
         newProposal.votesFor = 0;
         newProposal.votesAgainst = 0;
+
+        counter++;
         proposals.push(newProposal);
 
         emit ProposalCreated(
@@ -222,11 +217,9 @@ contract AgroDAO {
         );
     }
 
-    function isProposalActive(uint256 _proposalIndex)
-        public
-        view
-        returns (bool)
-    {
+    function isProposalActive(
+        uint256 _proposalIndex
+    ) public view returns (bool) {
         if (
             proposals[_proposalIndex].votesFor <=
             proposals[_proposalIndex].votesAgainst
@@ -271,15 +264,15 @@ contract AgroDAO {
         ].amount;
 
         fac.loan = proposals[_proposalIndex].amount; // add interest too
-        loanTimer[msg.sender] = block.timestamp + LOAN_TIME;
+        loanTimer[proposals[_proposalIndex].owner] =
+            block.timestamp +
+            LOAN_TIME;
         proposals[_proposalIndex].isExecuted = true;
     }
 
-    function getVotingResults(uint256 _proposalIndex)
-        public
-        view
-        returns (uint256 votesFor, uint256 votesAgainst)
-    {
+    function getVotingResults(
+        uint256 _proposalIndex
+    ) public view returns (uint256 votesFor, uint256 votesAgainst) {
         require(_proposalIndex < proposals.length, "Invalid proposal index");
 
         votesFor = proposals[_proposalIndex].votesFor;
@@ -328,6 +321,7 @@ contract AgroDAO {
 
         // Add the user to the voters list
         selectedProposal.voters.push(msg.sender);
+        members[msg.sender].reputation = members[msg.sender].reputation + 5;
     }
 
     function loanPayBack() public payable {
@@ -351,20 +345,22 @@ contract AgroDAO {
         } else members[user].reputation--;
     }
 
-    address[] topContributors;
-    event topContributorsEmitter(address[] topContributors);
+    address[] topContributorsOfMonth;
 
-    function getTopContributor() public {
-        delete topContributors;
+    function getTopContributors() public view returns (address[] memory) {
+        return topContributorsOfMonth;
+    }
+
+    event topContributorsEmitter(address winner, uint256 time, uint256 amount);
+
+    // function to be called every month
+    function topContributorReset() public {
         uint256 daoLength = daoMembers.length;
-
         uint256 maxReputations = 0;
 
         for (uint256 i = 0; i < daoLength; i++) {
             address user = daoMembers[i];
-
             uint256 reputation = members[user].reputation;
-
             if (reputation > maxReputations) maxReputations = reputation;
         }
 
@@ -374,10 +370,13 @@ contract AgroDAO {
             uint256 reputation = members[user].reputation;
 
             if (reputation == maxReputations) {
-                topContributors.push(user);
+                agriToken.transfer(user, 1000);
+                topContributorsOfMonth.push(user);
+                emit topContributorsEmitter(user, block.timestamp, 1000);
             }
+
+            members[user].reputation = 0; // reset reputation
         }
-        emit topContributorsEmitter(topContributors);
     }
 
     function contibuteDataset(string memory url, string memory name) public {
@@ -395,15 +394,22 @@ contract AgroDAO {
             block.timestamp - loanTimer[addr] > 0);
     }
 
-    event PaymentDone(address recipient, uint256 amount);
-    event Test(uint256 value);
+    event PaymentDue(address recipient, uint256 amount);
+
+    address[] public defaulters;
 
     function checkPayment() public {
-        emit Test(123445);
+        delete defaulters; // resets the defaulters array everytime its called
+
         for (uint256 i = 0; i < daoMembers.length; ++i) {
             if (paymentDue(daoMembers[i])) {
-                emit PaymentDone(daoMembers[i], loanTimer[daoMembers[i]]);
+                defaulters.push(daoMembers[i]);
+                emit PaymentDue(daoMembers[i], loanTimer[daoMembers[i]]);
             }
         }
+    }
+
+    function viewDefaulters() public view returns (address[] memory) {
+        return defaulters;
     }
 }
