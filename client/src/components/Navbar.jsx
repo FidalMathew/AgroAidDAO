@@ -75,8 +75,8 @@ export default function Navbar() {
           ) => {
             const farmerDetails = await daoContract.members(member);
             console.log(farmerDetails, 'farmerDetails')
+            setDefaulters(defaulters => [...defaulters, { address: member, name: farmerDetails.loan }]);
           })
-          setDefaulters(res)
         }
       } catch (error) {
         console.log(error)
