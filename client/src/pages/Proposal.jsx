@@ -173,16 +173,16 @@ const Proposal = () => {
                     for (let i = 0; i < res.length; i++) {
                         const proposalId = res[i];
                         const proposalValue = {
-                            proposalId: i,
-                            description: proposalId[0],
-                            owner: proposalId[1],
-                            amount: Number(proposalId[2]),
-                            isExecuted: proposalId[3],
-                            startTime: convertDateAndTime(proposalId[4]._hex),
-                            endTime: convertDateAndTime(proposalId[5]._hex),
-                            votesFor: Number(proposalId[6]),
-                            votesAgainst: Number(proposalId[7]),
-                            voters: proposalId[8],
+                            proposalId: Number(proposalId[0]),
+                            description: proposalId[1],
+                            owner: proposalId[2],
+                            amount: Number(proposalId[3]),
+                            isExecuted: proposalId[4],
+                            startTime: convertDateAndTime(proposalId[5]._hex),
+                            endTime: convertDateAndTime(proposalId[6]._hex),
+                            votesFor: Number(proposalId[7]),
+                            votesAgainst: Number(proposalId[8]),
+                            voters: proposalId[9],
                         }
                         proposalList.push(proposalValue);
                     }
@@ -358,7 +358,7 @@ const Proposal = () => {
                                     <Text fontSize="sm" fontWeight={"semibold"}>Status</Text>
                                     {/* <PulseComponent status={"expired"} />  */}
                                     {/*  status === "pending" ? "Pending" : status === "completed" ? "Done" : status == "expired" && "Expired" */}
-                                    <PulseComponent status={{ isExecuted } === true ? "completed" : currTime >= endTime ? "expired" : "pending"} />
+                                    <PulseComponent status={isExecuted === true ? "completed" : currTime >= endTime ? "expired" : "pending"} />
                                 </SimpleGrid>
                                 <SimpleGrid border="1px" p="5" w="full" rounded="md" columns={{ base: 1 }} spacing={"2"}>
                                     <Text fontSize="sm" fontWeight={"semibold"}>Time Left</Text>

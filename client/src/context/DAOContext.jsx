@@ -12,7 +12,7 @@ const DAOContextprovider = ({ children }) => {
     const [chainId, setChainId] = useState("")
     const [currentAccount, setCurrentAccount] = useState("")
     const [errorPage, setErrorPage] = useState(false)
-    const contractAddress = "0x8FD67C501E49FC60FA702cE9a42AE102f81D6713"
+    const contractAddress = "0x9B85ED51dD33d2B9BC43679c4241578563bD8A62"
     const [daoContract, setdaoContract] = useState("");
     const [ethBalance, setEthBalance] = useState(0);
     const { ethereum } = window;
@@ -190,7 +190,7 @@ const DAOContextprovider = ({ children }) => {
         setJoinLoading(true);
         try {
             const transaction = await daoContract.joinDAO(lat, long, name, {
-                value: ethers.utils.parseEther('0.01')
+                value: ethers.utils.parseEther('0.002')
             });
             await transaction.wait();
             console.log(transaction, 'transaction')

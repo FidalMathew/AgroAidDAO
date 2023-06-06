@@ -43,7 +43,7 @@ import {
 } from '@chakra-ui/icons';
 import ToggleTheme from './Toggletheme';
 import useGlobalContext from '../hooks/useGlobalContext';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 
 export default function Navbar() {
@@ -52,15 +52,40 @@ export default function Navbar() {
   const navigate = useNavigate()
 
 
-  const { connectWallet, currentAccount, disconnectWallet } = useGlobalContext()
+  const { connectWallet, currentAccount, disconnectWallet, daoContract } = useGlobalContext()
   // console.log(currentAccount, 'accountss')
 
-
+  const [defaulters, setDefaulters] = useState([])
   useEffect(() => {
     if (currentAccount === undefined) {
       navigate('/')
     }
   }, [])
+
+  useEffect(() => {
+    const fetchDefaulters = async () => {
+      try {
+        if (daoContract) {
+          const res = await daoContract.viewDefaulters();
+          // res.map(async(defaulter)=>{
+          //   const farmerDetails = await daoContract.members(defaulter);
+
+          // })
+          res.map(async (member
+          ) => {
+            const farmerDetails = await daoContract.members(member);
+            console.log(farmerDetails, 'farmerDetails')
+          })
+          setDefaulters(res)
+        }
+      } catch (error) {
+        console.log(error)
+      }
+    }
+    fetchDefaulters()
+  }, [daoContract])
+
+
 
   return (
     <>
@@ -190,43 +215,24 @@ export default function Navbar() {
                   <Tr>
                     <Th>Addresses</Th>
                     <Th>Loan</Th>
-                    <Th>Loan</Th>
-                    <Th textAlign={"right"}>Status</Th>
                   </Tr>
                 </Thead>
                 <Tbody>
-                  <Tr>
-                    <Td>0x3ri3h....cBa</Td>
-                    <Td>
-                      <Text>
-                        {"For the purchase of 10 acres of land in the village of".slice(0, 20) + "..."}
-                      </Text>
-                    </Td>
-                    <Td>0.001 ETH</Td>
-                    <Td textAlign={"right"}>
-                      <Badge 
-                        colorScheme="red"
-                      >
-                        Defaulter
-                      </Badge>
-                    </Td>
-                  </Tr>
-                  <Tr>
-                    <Td>0x3ri3h....cBa</Td>
-                    <Td>
-                      <Text>
-                        {"For the purchase of 10 acres of land in the village of".slice(0, 20) + "..."}
-                      </Text>
-                    </Td>
-                    <Td>0.001 ETH</Td>
-                    <Td textAlign={"right"}>
-                      <Badge 
-                        colorScheme="green"
-                      >
-                        Paid
-                      </Badge>
-                    </Td>
-                  </Tr>
+                  {
+                    defaulters.length > 0 ? defaulters.map((defaulter, index) => {
+
+                      return (
+                        <Tr key={index}>
+                          <Td>{defaulter}</Td>
+                          <Td>0.001 ETH</Td>
+                        </Tr>
+                      )
+                    }) :
+                      (
+                        <Tr>
+                          <Td as={Text} textAlign={"center"}>No defaulters</Td>
+                        </Tr>
+                      )}
                 </Tbody>
               </Table>
             </TableContainer>

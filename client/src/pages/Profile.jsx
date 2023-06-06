@@ -1,4 +1,4 @@
-import { Avatar, Box, Flex, Grid, Heading, Stack, Stat, StatLabel, StatNumber, Text, VStack, useColorModeValue, chakra, HStack, Divider, TableContainer, Table, TableCaption, Thead, Tr, Td, Tfoot, Th, Tbody, Button, Badge, SimpleGrid, Icon, Link as ChakraLink } from '@chakra-ui/react'
+import { Avatar, Box, Flex, Grid, Heading, Stack, Stat, StatLabel, StatNumber, Text, VStack, useColorModeValue, chakra, HStack, Divider, TableContainer, Table, TableCaption, Thead, Tr, Td, Tfoot, Th, Tbody, Button, Badge, SimpleGrid, Icon, Link as ChakraLink, Toast, useToast } from '@chakra-ui/react'
 import { Link, useLocation, useParams } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import { useEffect } from 'react';
@@ -44,7 +44,9 @@ const Profile = () => {
         reputation: 0,
         time: ""
     })
+    const [loanDueDate, setLoanDueDate] = useState(0)
 
+    const toast = useToast()
     const { country } = useCurrentLocation()
 
     useEffect(() => {
@@ -94,16 +96,16 @@ const Profile = () => {
                     for (let i = 0; i < res.length; i++) {
                         const proposalId = res[i];
                         const proposalValue = {
-                            proposalId: i,
-                            description: proposalId[0],
-                            owner: proposalId[1],
-                            amount: Number(proposalId[2]),
-                            isExecuted: proposalId[3],
-                            startTime: convertDateAndTime(proposalId[4]._hex),
-                            endTime: convertDateAndTime(proposalId[5]._hex),
-                            votesFor: Number(proposalId[6]),
-                            votesAgainst: Number(proposalId[7]),
-                            voters: proposalId[8],
+                            proposalId: Number(proposalId[0]),
+                            description: proposalId[1],
+                            owner: proposalId[2],
+                            amount: Number(proposalId[3]),
+                            isExecuted: proposalId[4],
+                            startTime: convertDateAndTime(proposalId[5]._hex),
+                            endTime: convertDateAndTime(proposalId[6]._hex),
+                            votesFor: Number(proposalId[7]),
+                            votesAgainst: Number(proposalId[8]),
+                            voters: proposalId[9],
                         }
                         proposalList.push(proposalValue);
                     }
@@ -122,18 +124,58 @@ const Profile = () => {
         getAllProposals();
     }, [daoContract, location, id, currentAccount])
 
+
+    useEffect(() => {
+        const getLoanTimer = async () => {
+            try {
+                if (daoContract) {
+                    const loanDue = await daoContract.loanTimer(id);
+                    // console.log("dloana", loanDue)
+                    // convertDateAndTime(loanDue._hex)
+                    setLoanDueDate(convertDateAndTime(loanDue._hex))
+
+
+                }
+            } catch (error) {
+                console.log(error)
+            }
+        }
+        getLoanTimer();
+    }, [daoContract, id])
+
+
+
+    const [payLoanLoading, setPayLoanLoading] = useState(false)
+
     const payLoan = async (amount) => {
+        setPayLoanLoading(true)
         try {
             if (daoContract) {
                 // console.log(item.amount)
                 let ethVal = amount / Math.pow(10, 18).toString()
                 ethVal = ethVal.toString()
                 // console.log(ethVal.toString())
-                const res = await daoContract.loanPayBack({ from: currentAccount, value: ethers.utils.parseEther(ethVal) })
-                console.log(res)
+                await daoContract.loanPayBack({ from: currentAccount, value: ethers.utils.parseEther(ethVal) })
+                // console.log(res)
+                toast({
+                    title: "Loan Paid Successfully",
+                    status: "success",
+                    duration: 3000,
+                    isClosable: true,
+                })
             }
         } catch (error) {
             console.log(error)
+            toast({
+                title: "Error",
+                description: "Something went wrong",
+                status: "error",
+                duration: 3000,
+                isClosable: true,
+            })
+        }
+        finally {
+            setPayLoanLoading(false)
         }
     }
 
@@ -156,14 +198,20 @@ const Profile = () => {
                                 <Text>Reputation: <chakra.span as="b">{user.reputation}</chakra.span> </Text>
                                 <Divider orientation='horizontal' />
                                 <Text>Your DAO Token: <chakra.span fontWeight={"semibold"}>{agrotokenBalance + " ETH"}</chakra.span> </Text>
-                                <Divider orientation='horizontal' />
-                                <HStack>
-                                    <Text>Voting Power: <chakra.span fontWeight={"semibold"}>{"Voting Power"}</chakra.span> </Text>
-                                </HStack>
+                                {user && Number(user.loan) !== 0 &&
+                                    <>
+                                        <Divider orientation='horizontal' />
+                                        <HStack>
+                                            <Text>Loan Due Date: <chakra.span fontWeight={"semibold"}>{loanDueDate}</chakra.span> </Text>
+                                        </HStack>
+                                    </>
+                                }
                                 <Divider orientation='horizontal' />
                                 <HStack>
                                     {
-                                        user.loan == 0 ? <Text>Loan: <chakra.span fontWeight={"semibold"}>{user.loan + " ETH"}</chakra.span> </Text> : <Button colorScheme="teal" size="md" onClick={() => payLoan(user.loan)}>Pay Loan</Button>
+                                        Number(user.loan) === 0 ?
+                                            <Text>Loan: <chakra.span fontWeight={"semibold"}>{user.loan + " ETH"}</chakra.span> </Text> :
+                                            <Button colorScheme="teal" size="md" loadingText={"paying..."} isLoading={payLoanLoading} onClick={() => payLoan(user.loan)}>Pay Loan</Button>
                                     }
 
                                 </HStack>
@@ -184,7 +232,7 @@ const Profile = () => {
                                         user.loan > 0 ? <Icon as={FaExclamationTriangle} color="red.500" /> : <Icon as={FaCheckCircle} color="green.500" />
                                     }
                                 </HStack>
-                                <Text fontWeight={"semibold"} fontSize={"2xl"}>{Number(user.loan)} ETH</Text>
+                                <Text fontWeight={"semibold"} fontSize={"2xl"}>{Number(user.loan / Math.pow(10, 18))} ETH</Text>
                             </SimpleGrid>
                             <StatsCard title={'Your ETH Balance'} stat={Number(ethBalance).toFixed(5)} />
                             <StatsCard title={'Country'} stat={country} />
