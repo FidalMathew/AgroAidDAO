@@ -1,4 +1,4 @@
-import { Avatar, Box, Flex, Grid, Heading, Stack, Stat, StatLabel, StatNumber, Text, VStack, useColorModeValue, chakra, HStack, Divider, TableContainer, Table, TableCaption, Thead, Tr, Td, Tfoot, Th, Tbody, Button, Badge } from '@chakra-ui/react'
+import { Avatar, Box, Flex, Grid, Heading, Stack, Stat, StatLabel, StatNumber, Text, VStack, useColorModeValue, chakra, HStack, Divider, TableContainer, Table, TableCaption, Thead, Tr, Td, Tfoot, Th, Tbody, Button, Badge, SimpleGrid, Icon, Link as ChakraLink } from '@chakra-ui/react'
 import { Link, useLocation, useParams } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import { useEffect } from 'react';
@@ -6,6 +6,7 @@ import useGlobalContext from '../hooks/useGlobalContext';
 import { useState } from 'react';
 import useCurrentLocation from '../hooks/useCurrentLocation';
 import { ethers } from 'ethers';
+import { FaCheckCircle, FaExclamationTriangle } from 'react-icons/fa'
 
 function StatsCard(props) {
     const { title, stat } = props;
@@ -136,6 +137,7 @@ const Profile = () => {
         }
     }
 
+    console.log(Number(user.loan), 'prf')
 
     return (
         <>
@@ -150,16 +152,22 @@ const Profile = () => {
                                 <Text fontSize="2xl" fontWeight="normal">{user.name}</Text>
                                 <Text fontSize="lg" fontWeight="normal">{user.address.toString().slice(0, 5) + "..." + user.address.toString().slice(-3)}</Text>
                             </VStack>
-                            <VStack direction='column' h='100px' w="100%" p={4} spacing={"4"}>
+                            <VStack direction='column' h='110px' w="100%" p={4} spacing={"4"}>
                                 <Text>Reputation: <chakra.span as="b">{user.reputation}</chakra.span> </Text>
                                 <Divider orientation='horizontal' />
-                                <Text>Voting Power: <chakra.span as="b">{"0"}</chakra.span> </Text>
+                                <Text>Your DAO Token: <chakra.span fontWeight={"semibold"}>{agrotokenBalance + " ETH"}</chakra.span> </Text>
                                 <Divider orientation='horizontal' />
-                                <Text>Voting Power: <chakra.span as="b">{"0"}</chakra.span> </Text>
+                                <HStack>
+                                    <Text>Voting Power: <chakra.span fontWeight={"semibold"}>{"Voting Power"}</chakra.span> </Text>
+                                </HStack>
                                 <Divider orientation='horizontal' />
-                                <Text>Voting Power: <chakra.span as="b">{"0"}</chakra.span> </Text>
-                                <Divider orientation='horizontal' />
+                                <HStack>
+                                    {
+                                        user.loan == 0 ? <Text>Loan: <chakra.span fontWeight={"semibold"}>{user.loan + " ETH"}</chakra.span> </Text> : <Button colorScheme="teal" size="md" onClick={() => payLoan(user.loan)}>Pay Loan</Button>
+                                    }
 
+                                </HStack>
+                                <Divider orientation='horizontal' />
                             </VStack>
                         </VStack>
                         {/* <Box border="1px solid" borderColor={useColorModeValue('gray.800', 'gray.500')} rounded="lg" w='90%' h='10vh'>
@@ -168,8 +176,17 @@ const Profile = () => {
                     </Stack>
                     <Grid h="30%" w={{ base: "100%", lg: "60%" }} templateRows="repeat(1, 1fr)" templateColumns={"repeat(1, 1fr)"} gap={4} ml={{ base: "0", lg: "5" }}>
                         <Stack direction={{ base: "column", md: "row" }}>
-                            <StatsCard title={'Your DAO Balance'} stat={agrotokenBalance + " AGRO"} />
-                            <StatsCard title={'Your ETH Balance'} stat={ethBalance} />
+                            <SimpleGrid border="1px" p="5" w={{ base: "100%", md: "30%" }} rounded="md" columns={{ base: 1 }} spacing={"0"}>
+                                <HStack>
+                                    <Text fontSize="sm" fontWeight={"semibold"}>Your pending Loan</Text>
+                                    {/* {user.loan > 0 ? <Badge colorScheme="red">Pending</Badge> : <Badge colorScheme="green">Paid</Badge>} */}
+                                    {
+                                        user.loan > 0 ? <Icon as={FaExclamationTriangle} color="red.500" /> : <Icon as={FaCheckCircle} color="green.500" />
+                                    }
+                                </HStack>
+                                <Text fontWeight={"semibold"} fontSize={"2xl"}>{Number(user.loan)} ETH</Text>
+                            </SimpleGrid>
+                            <StatsCard title={'Your ETH Balance'} stat={Number(ethBalance).toFixed(5)} />
                             <StatsCard title={'Country'} stat={country} />
                         </Stack>
                         <Box border="1px solid" borderColor={useColorModeValue('gray.800', 'gray.500')} rounded="lg" w='100%' h='52vh' className='members-list' overflowY={"scroll"}>
@@ -181,7 +198,7 @@ const Profile = () => {
                                             <Th>Proposal Description</Th>
                                             <Th textAlign={"left"}>Amount</Th>
                                             <Th textAlign={"center"}>Status</Th>
-                                            <Th textAlign={"center"}>Pay</Th>
+                                            {/* <Th textAlign={"center"}>Pay</Th> */}
                                         </Tr>
                                     </Thead>
                                     <Tbody>
@@ -189,10 +206,13 @@ const Profile = () => {
                                         {proposal && Array.isArray(proposal) && proposal.map((item, index) => {
                                             return (
                                                 <Tr key={index}>
-                                                    <Link to={`/proposal/${item.proposalId}`}><Td>{item.description.length > 20
-                                                        ? item.description.slice(0, 20) + "..."
-                                                        : item.description
-                                                    }</Td></Link>
+                                                    <Link to={`/proposal/${item.proposalId}`}><Td>
+                                                        <Text as={ChakraLink}>
+                                                            {item.description.length > 20
+                                                                ? item.description.slice(0, 20) + "..."
+                                                                : item.description}
+                                                        </Text>
+                                                    </Td></Link>
                                                     <Td textAlign="left">{item.amount / Math.pow(10, 18)}</Td>
                                                     <Td textAlign="center">
                                                         {item.isExecuted ? (
@@ -201,7 +221,7 @@ const Profile = () => {
                                                             <Badge colorScheme="red">Not Executed</Badge>
                                                         )}
                                                     </Td>
-                                                    {
+                                                    {/* {
                                                         item.amount > 0 ?
                                                             <Td textAlign="center">
                                                                 <Button colorScheme="teal" size="sm" onClick={() => payLoan(item.amount)}>Pay</Button>
@@ -210,7 +230,7 @@ const Profile = () => {
                                                             <Td textAlign="center">
                                                                 <Button colorScheme="teal" size="sm" disabled>Paid</Button>
                                                             </Td>
-                                                    }
+                                                    } */}
                                                 </Tr>
                                             );
                                         })}
