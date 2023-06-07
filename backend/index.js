@@ -5,8 +5,9 @@ app.get('/date', (req, res) => {
     const currentDate = new Date();
     const month = currentDate.toLocaleString('en-US', { month: 'long' });
     const year = currentDate.getFullYear();
-
-    res.json({ month, year });
+    const date = `${month} ${year}`
+    // console.log(`Month: ${month}, Year: ${year}`);
+    res.json({ date });
 });
 
 app.listen(3000, () => {
