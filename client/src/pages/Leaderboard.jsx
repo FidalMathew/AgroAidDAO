@@ -13,6 +13,7 @@ import {
     VStack,
     Stack,
     useColorModeValue,
+    Text,
 } from '@chakra-ui/react'
 import Navbar from '../components/Navbar'
 import useGlobalContext from '../hooks/useGlobalContext'
@@ -85,33 +86,33 @@ const Leaderboard = () => {
                 >
                     Leaderboard
                 </Heading>
-                <TableContainer
-                    border="1px solid"
-                    // different from dark and light mode
-                    borderColor={useColorModeValue('gray.600', 'gray.200')}
-                    borderRadius="md"
-                    boxShadow="md"
-                // fontSize={{ base: 'sm', md: 'lg' }}
-                >
-                    <Table
-                        variant='simple'
-                        size="lg"
+                {leaderboard.length > 0 &&
+                    <TableContainer
+                        border="1px solid"
+                        // different from dark and light mode
+                        borderColor={useColorModeValue('gray.600', 'gray.200')}
+                        borderRadius="md"
+                        boxShadow="md"
+                    // fontSize={{ base: 'sm', md: 'lg' }}
                     >
-                        <Thead>
-                            <Tr>
-                                <Th>Rank</Th>
-                                <Th>Address (Name)</Th>
-                                <Th isNumeric>Reputation</Th>
-                            </Tr>
-                        </Thead>
-                        <Tbody>
-                            <>
+                        <Table
+                            variant='simple'
+                            size="lg"
+                        >
+                            <Thead>
+                                <Tr>
+                                    <Th>Rank</Th>
+                                    <Th>Address (Name)</Th>
+                                    <Th isNumeric>Reputation</Th>
+                                </Tr>
+                            </Thead>
+                            <Tbody>
                                 {leaderboard.map((val, index) => (
                                     <Tr
                                         key={index}
                                         style={{ marginBottom: "8px" }}>
                                         <Td>
-                                            <chakra.span bg={
+                                            <chakra.span fontWeight={"semibold"} bg={
                                                 index === 0 ? "red.400" :
                                                     index === 1 ? "orange.400" :
                                                         index === 2 ? "cyan.600" : ""
@@ -122,21 +123,38 @@ const Leaderboard = () => {
                                                             index === 2 ? "white" : ""
                                                 }>{index + 1}</chakra.span>
                                         </Td>
-                                        <Td>{val.address.toLowerCase() === currentAccount.toLowerCase() ? "You" : val.address}</Td>
+                                        <Td>
+                                            <Text fontWeight={"semibold"}>
+                                                {val.address.toLowerCase() === currentAccount.toLowerCase() ? "You" : val.address}
+                                            </Text>
+                                        </Td>
                                         <Td isNumeric>{val.reputation}</Td>
                                     </Tr>
                                 ))}
-                            </>
-                        </Tbody>
-                        {/* <Tfoot>
+                            </Tbody>
+                        </Table>
+                    </TableContainer>
+                }
+
+                {
+                    leaderboard.length === 0 &&
+                    <Box
+                        py={16}
+                        borderRadius="md"
+                        border="1px solid"
+                        // different from dark and light mode
+                        borderColor={useColorModeValue('gray.600', 'gray.200')}
+                    >
+                        <Text fontWeight={"semibold"}>No members yet</Text>
+                    </Box>
+                }
+                {/* <Tfoot>
                             <Tr>
                                 <Th>To convert</Th>
                                 <Th>into</Th>
                                 <Th isNumeric>multiply by</Th>
                             </Tr>
                         </Tfoot> */}
-                    </Table>
-                </TableContainer>
             </Stack>
         </>
     )

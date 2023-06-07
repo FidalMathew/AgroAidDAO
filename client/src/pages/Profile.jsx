@@ -155,7 +155,8 @@ const Profile = () => {
                 let ethVal = amount / Math.pow(10, 18).toString()
                 ethVal = ethVal.toString()
                 // console.log(ethVal.toString())
-                await daoContract.loanPayBack({ from: currentAccount, value: ethers.utils.parseEther(ethVal) })
+                const transaction = await daoContract.loanPayBack({ from: currentAccount, value: ethers.utils.parseEther(ethVal) })
+                await transaction.wait()
                 // console.log(res)
                 toast({
                     title: "Loan Paid Successfully",

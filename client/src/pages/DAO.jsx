@@ -191,10 +191,24 @@ const DAO = () => {
     useEffect(() => {
 
         const onNewProposal = (description, owner, amount, isExecuted, startTime, endTime, votesFor, votesAgainst, voters) => {
-
-
+            // console.log("NewCandidate", candAddress, name, proposal, votes);
+            // console.log("Proposal updated successfully",
+            //     description, owner, Number(amount), isExecuted, convertDateAndTime(startTime._hex), convertDateAndTime(endTime._hex), Number(votesFor), Number(votesAgainst), voters
+            // )
+            console.log({
+                proposalId: fetchedProposals.length,
+                description: description,
+                owner: owner,
+                amount: Number(amount),
+                isExecuted: isExecuted,
+                startTime: convertDateAndTime(startTime._hex),
+                endTime: convertDateAndTime(endTime._hex),
+                votesFor: Number(votesFor),
+                votesAgainst: Number(votesAgainst),
+                voters: voters,
+            },
+            ...fetchedProposals, 'checking fetched proposals')
             setFetchedProposals(prevState => [
-                ...prevState,
                 {
                     proposalId: fetchedProposals.length,
                     description: description,
@@ -206,7 +220,8 @@ const DAO = () => {
                     votesFor: Number(votesFor),
                     votesAgainst: Number(votesAgainst),
                     voters: voters,
-                }
+                },
+                ...prevState,
             ]);
         };
 
@@ -221,6 +236,8 @@ const DAO = () => {
             }
         };
     }, [daoContract]);
+
+
 
     return (
         <>
@@ -460,9 +477,16 @@ const DAO = () => {
             </Flex>
             <TableContainer m="auto" maxW="80vw" mb="4" border="1px" p="2" pb="0" rounded="lg" maxH={"80vh"} overflowY={"scroll"} className="members-list">
                 <Heading size="md" p={4} textAlign={"center"}>Member Record</Heading>
-                <Table variant='simple' mb="6" size="lg">
+                {fetchedProposals.length === 0 && (
+                    <Box
+                        w="100%"
+                        py={16}
+                    >
+                        <Text textAlign={"center"}>No proposals found.</Text>
+                    </Box>
+                )}
+                {fetchedProposals.length !== 0 && <Table variant='simple' mb="6" size="lg">
                     {/* <TableCaption>Imperial to metric conversion factors</TableCaption> */}
-
                     <Thead>
                         <Tr>
                             <Th>Address</Th>
@@ -472,13 +496,7 @@ const DAO = () => {
                             <Th textAlign={"right"}>Voting Percentage</Th>
                         </Tr>
                     </Thead>
-                    {fetchedProposals.length === 0 && (
-                        <Tbody>
-                            <Tr>
-                                <Td colSpan={4} textAlign={"center"}>No proposals found.</Td>
-                            </Tr>
-                        </Tbody>
-                    )}
+
                     <Tbody>
                         {
                             fetchedProposals.slice().reverse().map((proposal, index) => (
@@ -522,7 +540,7 @@ const DAO = () => {
                             <Th isNumeric>multiply by</Th>
                         </Tr>
                     </Tfoot> */}
-                </Table>
+                </Table>}
             </TableContainer>
         </>
     )

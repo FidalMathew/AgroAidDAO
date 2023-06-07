@@ -75,7 +75,7 @@ export default function Navbar() {
           ) => {
             const farmerDetails = await daoContract.members(member);
             console.log(farmerDetails, 'farmerDetails')
-            setDefaulters(defaulters => [...defaulters, { address: member, name: farmerDetails.loan }]);
+            setDefaulters(defaulters => [...defaulters, { address: member, loan: farmerDetails.loan }]);
           })
         }
       } catch (error) {
@@ -83,8 +83,8 @@ export default function Navbar() {
       }
     }
     fetchDefaulters()
+    console.log('defaulters', defaulters)
   }, [daoContract])
-
 
 
   return (
@@ -208,34 +208,31 @@ export default function Navbar() {
           <ModalHeader>DAO Defaulters</ModalHeader>
           <ModalCloseButton />
           <ModalBody>
-            <TableContainer>
-              <Table variant='simple'>
-                {/* <TableCaption>Imperial to metric conversion factors</TableCaption> */}
-                <Thead>
-                  <Tr>
-                    <Th>Addresses</Th>
-                    <Th>Loan</Th>
-                  </Tr>
-                </Thead>
-                <Tbody>
-                  {
-                    defaulters.length > 0 ? defaulters.map((defaulter, index) => {
-
-                      return (
+            {
+              defaulters.length > 0 ? (
+                <TableContainer>
+                  <Table variant='simple'>
+                    {/* <TableCaption>Imperial to metric conversion factors</TableCaption> */}
+                    <Thead>
+                      <Tr>
+                        <Th>Addresses</Th>
+                        <Th>Loan</Th>
+                      </Tr>
+                    </Thead>
+                    <Tbody>
+                      {defaulters.map((defaulter, index) => (
                         <Tr key={index}>
-                          <Td>{defaulter}</Td>
-                          <Td>0.001 ETH</Td>
+                          <Td>{defaulter.address}</Td>
+                          <Td>{defaulter.loan}</Td>
                         </Tr>
-                      )
-                    }) :
-                      (
-                        <Tr>
-                          <Td as={Text} textAlign={"center"}>No defaulters</Td>
-                        </Tr>
-                      )}
-                </Tbody>
-              </Table>
-            </TableContainer>
+                      ))}
+                    </Tbody>
+                  </Table>
+                </TableContainer>
+              ) : (
+                <Text textAlign={'center'}>No defaulters</Text>
+              )
+            }
           </ModalBody>
           <ModalFooter>
             {/* <Button onClick={defaulterModal.onClose}>Close</Button> */}

@@ -227,20 +227,49 @@ const Proposal = () => {
         ])
     }, [id, location, hasVoted, proposal])
 
+    const [executeProposalLoading, setExecuteProposalLoading] = useState(false)
+
     const executeProposals = async (prop) => {
+        setExecuteProposalLoading(true)
         if (daoContract) {
             try {
                 const res = await daoContract.executeProposal(prop);
                 console.log(res)
+                setIsExecuted(true)
+                setCanExecute(false)
+                toast({
+                    title: "Proposal Executed.",
+                    description: "Executed",
+                    status: "success",
+                    duration: 9000,
+                    isClosable: true,
+                })
             }
             catch (err) {
                 console.log(err)
+                setIsExecuted(false)
+                setCanExecute(false)
+                toast({
+                    title: "Error Executing Proposal.",
+                    description: "Error",
+                    status: "error",
+                    duration: 9000,
+                    isClosable: true,
+                })
+            }
+            finally{
+                setExecuteProposalLoading(false)
             }
         }
     }
+
+    useEffect(()=> {
+        if (proposal.isExecuted) {
+            setIsExecuted(true);
+        }
+    }, [isExecuted])
+
     useEffect(() => {
-
-
         if (end < now) {
             setExpired(true)
         }
@@ -292,7 +321,7 @@ const Proposal = () => {
             }
         }
         disableButton();
-    }, [expired, proposal])
+    }, [expired, proposal, hasVoted])
 
     return (
         <>
@@ -402,18 +431,22 @@ const Proposal = () => {
                                     </Button>
                                 </Tooltip>
                                 <Tooltip
-                                    label={expired ? "Voting has expired" : ""}
+                                    label={isExecuted ? "Proposal has already been executed" : !expired ? "Voting has not expired" : proposal?.owner?.toLowerCase() != currentAccount.toLowerCase() ? "You cannot execute this proposal" : ""}
                                 >
                                     <Button
+                                        loadingText="Executing..."
+                                        isLoading={executeProposalLoading}
                                         colorScheme="teal"
                                         rightIcon={<RepeatClockIcon color="yellow.500" />} variant="outline" size="md" w="full" mx={'auto'}
-                                        isDisabled={!expired || isExecuted || !canExecute}
+                                        isDisabled={
+                                            !expired || !canExecute || proposal?.owner?.toLowerCase() != currentAccount.toLowerCase() || isExecuted
+                                        }
                                         onClick={() => executeProposals(id)}
                                     >
                                         Execute Proposal
                                     </Button>
                                 </Tooltip>
-                                z                            </Stack>
+                            </Stack>
                         </Stack>
                     </Stack>
                 </VStack>
