@@ -33,12 +33,9 @@ import { ethers } from "ethers";
 const DAO = () => {
     const toast = useToast()
     const [checked, setChecked] = useState(false)
-    useEffect(() => {
-        console.log(checked, 'checked')
-    }, [checked])
 
 
-    const { daoContract, currentAccount } = useGlobalContext();
+    const { daoContract, fetchAmount } = useGlobalContext();
 
     const [daoBalance, setDaoBalance] = useState(0);
     const [daoToken, setDaoToken] = useState(0);
@@ -58,13 +55,6 @@ const DAO = () => {
     useEffect(() => {
         setCurrTime(now)
     }, [now])
-
-
-
-
-    useEffect(() => {
-        console.log(members[0], 'members')
-    }, [members])
 
     useEffect(() => {
         if (daoContract) {
@@ -135,21 +125,21 @@ const DAO = () => {
                     for (let i = 0; i < res.length; i++) {
                         const proposalId = res[i];
                         const proposalValue = {
-                            proposalId: i,
-                            description: proposalId[0],
-                            owner: proposalId[1],
-                            amount: Number(proposalId[2]),
-                            isExecuted: proposalId[3],
-                            startTime: convertDateAndTime(proposalId[4]._hex),
-                            endTime: convertDateAndTime(proposalId[5]._hex),
-                            votesFor: Number(proposalId[6]),
-                            votesAgainst: Number(proposalId[7]),
-                            voters: proposalId[8],
+                            proposalId: Number(proposalId[0]),
+                            description: proposalId[1],
+                            owner: proposalId[2],
+                            amount: Number(proposalId[3]),
+                            isExecuted: proposalId[4],
+                            startTime: convertDateAndTime(proposalId[5]._hex),
+                            endTime: convertDateAndTime(proposalId[6]._hex),
+                            votesFor: Number(proposalId[7]),
+                            votesAgainst: Number(proposalId[8]),
+                            voters: proposalId[9],
                         }
-                        console.log("endTime", convertDateAndTime(proposalId[5]._hex))
+
                         proposalList.push(proposalValue);
                     }
-                    console.log(proposalList, 'proposalList')
+
                     setFetchedProposals(proposalList);
 
                     setEndTime(endTime)
@@ -166,9 +156,11 @@ const DAO = () => {
     const CreateProposal = async (desc, amount) => {
         setProposalLoading(true);
         try {
-            const transaction = await daoContract.createProposal(desc, amount);
+            amount = String(amount)
+            let temp = ethers.utils.parseEther(amount)
+            const transaction = await daoContract.createProposal(desc, temp);
             await transaction.wait()
-            console.log(transaction, 'proposal transaction')
+
             toast({
                 // proposal creation
                 title: "Proposal created.",
@@ -200,11 +192,22 @@ const DAO = () => {
             // console.log("Proposal updated successfully",
             //     description, owner, Number(amount), isExecuted, convertDateAndTime(startTime._hex), convertDateAndTime(endTime._hex), Number(votesFor), Number(votesAgainst), voters
             // )
-
+            console.log({
+                proposalId: fetchedProposals.length,
+                description: description,
+                owner: owner,
+                amount: Number(amount),
+                isExecuted: isExecuted,
+                startTime: convertDateAndTime(startTime._hex),
+                endTime: convertDateAndTime(endTime._hex),
+                votesFor: Number(votesFor),
+                votesAgainst: Number(votesAgainst),
+                voters: voters,
+            },
+            ...fetchedProposals, 'checking fetched proposals')
             setFetchedProposals(prevState => [
-                ...prevState,
                 {
-                    proposalId: fetchedProposals.length + 1,
+                    proposalId: fetchedProposals.length,
                     description: description,
                     owner: owner,
                     amount: Number(amount),
@@ -214,7 +217,8 @@ const DAO = () => {
                     votesFor: Number(votesFor),
                     votesAgainst: Number(votesAgainst),
                     voters: voters,
-                }
+                },
+                ...prevState,
             ]);
         };
 
@@ -229,6 +233,7 @@ const DAO = () => {
             }
         };
     }, [daoContract]);
+
 
 
     return (
@@ -260,7 +265,7 @@ const DAO = () => {
             </HStack>
             <Flex justifyContent={"center"} w="100vw" m="auto" flexDir={{ base: "column", lg: "row" }} alignItems={"center"} p={{ base: 5, md: 10 }}>
                 {/* members */}
-                <VStack minH="70vh" maxH="700vh" w={{ base: "80%", lg: "25vw" }} overflowY="scroll" className="members-list" border="1px solid" borderColor="gray.400" rounded="md" spacing={0} display={"flex"}>
+                <VStack minH="70vh" maxH="70vh" w={{ base: "80%", lg: "25vw" }} overflowY="scroll" className="members-list" border="1px solid" borderColor="gray.400" rounded="md" spacing={0} display={"flex"}>
                     <Heading size="sm" p={4}>Members</Heading>
                     {members.map((article, index) => (
                         <Fragment key={index}>
@@ -313,7 +318,8 @@ const DAO = () => {
                             // title: Yup.string().required('Title is required'),
                             description: Yup.string().required('Description is required'),
                             askForPayment: Yup.boolean(),
-                            amount: Yup.number().required('Amount is required')
+                            // amount can't be less than zero
+                            amount: Yup.number().min(0, 'Amount can not be less than zero')
                         })}
 
                         onSubmit={(value, action) => {
@@ -466,33 +472,38 @@ const DAO = () => {
                     ))}
                 </VStack> */}
             </Flex>
-            <TableContainer m="auto" maxW="80vw" mb="4" border="1px" p="2" pb="0" rounded="lg">
+            <TableContainer m="auto" maxW="80vw" mb="4" border="1px" p="2" pb="0" rounded="lg" maxH={"80vh"} overflowY={"scroll"} className="members-list">
                 <Heading size="md" p={4} textAlign={"center"}>Member Record</Heading>
-                <Table variant='simple' mb="6" size="lg">
+                {fetchedProposals.length === 0 && (
+                    <Box
+                        w="100%"
+                        py={16}
+                    >
+                        <Text textAlign={"center"}>No proposals found.</Text>
+                    </Box>
+                )}
+                {fetchedProposals.length !== 0 && <Table variant='simple' mb="6" size="lg">
                     {/* <TableCaption>Imperial to metric conversion factors</TableCaption> */}
-
                     <Thead>
                         <Tr>
                             <Th>Address</Th>
                             <Th>Title</Th>
+                            <Th textAlign={"center"}>Proposal/Loan</Th>
                             <Th textAlign={"right"}>Status</Th>
                             <Th textAlign={"right"}>Voting Percentage</Th>
                         </Tr>
                     </Thead>
-                    {fetchedProposals.length === 0 && (
-                        <Tbody>
-                            <Tr>
-                                <Td colSpan={4} textAlign={"center"}>No proposals found.</Td>
-                            </Tr>
-                        </Tbody>
-                    )}
+
                     <Tbody>
                         {
-                            fetchedProposals.map((proposal, index) => (
+                            fetchedProposals.slice().reverse().map((proposal, index) => (
                                 <Tr key={index}>
-                                    <Td><Link to={`/proposal/${proposal.proposalId}`}
-
-                                    >{proposal.owner.toString().slice(0, 5) + "..." + proposal.owner.toString().slice(-4)}</Link></Td>
+                                    <Td><Link to={`/proposal/${proposal.proposalId}`}>
+                                        <Text as="u">
+                                            {proposal.owner.toString().slice(0, 5) + "..." + proposal.owner.toString().slice(-4)}
+                                        </Text>
+                                    </Link>
+                                    </Td>
                                     {/* <Td >{proposal.amount}</Td> */}
                                     {/*  <PulseComponent status={{isExecuted}===true ? "completed" : {currTime}>={endTime} ?  "expired" :"pending"} /> */}
 
@@ -503,6 +514,9 @@ const DAO = () => {
                                                 : proposal.description}
                                         </Text>
                                     </Td>
+                                    <Td textAlign={"left"}>{proposal.amount === 0 ?
+                                        <Badge colorScheme='blue' w="full" textAlign={"center"}>General Proposal</Badge> : <Badge w="100%"
+                                            textAlign={"center"} colorScheme='orange'>Loan Request</Badge>}</Td>
                                     <Td textAlign={"right"}>{proposal.isExecuted ? <Badge colorScheme='green'>Executed</Badge> : currTime >= toDate(proposal.endTime) ? <Badge colorScheme='red'>Expired</Badge> : <Badge colorScheme='yellow'>Pending</Badge>}</Td>
                                     <Td textAlign="right">
                                         {proposal.votesFor + proposal.votesAgainst === 0
@@ -523,7 +537,7 @@ const DAO = () => {
                             <Th isNumeric>multiply by</Th>
                         </Tr>
                     </Tfoot> */}
-                </Table>
+                </Table>}
             </TableContainer>
         </>
     )

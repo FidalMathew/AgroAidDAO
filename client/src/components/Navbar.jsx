@@ -17,6 +17,23 @@ import {
   MenuButton,
   MenuList,
   MenuItem,
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalCloseButton,
+  ModalBody,
+  ModalFooter,
+  ModalHeader,
+  TableContainer,
+  Table,
+  TableCaption,
+  Thead,
+  Tr,
+  Th,
+  Tbody,
+  Td,
+  Tfoot,
+  Badge,
 } from '@chakra-ui/react';
 import {
   HamburgerIcon,
@@ -26,22 +43,49 @@ import {
 } from '@chakra-ui/icons';
 import ToggleTheme from './Toggletheme';
 import useGlobalContext from '../hooks/useGlobalContext';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 
 export default function Navbar() {
   const { isOpen, onToggle } = useDisclosure();
+  const defaulterModal = useDisclosure()
   const navigate = useNavigate()
 
-  const { connectWallet, currentAccount, disconnectWallet } = useGlobalContext()
+
+  const { connectWallet, currentAccount, disconnectWallet, daoContract } = useGlobalContext()
   // console.log(currentAccount, 'accountss')
 
-
+  const [defaulters, setDefaulters] = useState([])
   useEffect(() => {
     if (currentAccount === undefined) {
       navigate('/')
     }
   }, [])
+
+  useEffect(() => {
+    const fetchDefaulters = async () => {
+      try {
+        if (daoContract) {
+          const res = await daoContract.viewDefaulters();
+          // res.map(async(defaulter)=>{
+          //   const farmerDetails = await daoContract.members(defaulter);
+
+          // })
+          res.map(async (member
+          ) => {
+            const farmerDetails = await daoContract.members(member);
+            console.log(farmerDetails, 'farmerDetails')
+            setDefaulters(defaulters => [...defaulters, { address: member, loan: farmerDetails.loan }]);
+          })
+        }
+      } catch (error) {
+        console.log(error)
+      }
+    }
+    fetchDefaulters()
+    console.log('defaulters', defaulters)
+  }, [daoContract])
+
 
   return (
     <>
@@ -91,16 +135,27 @@ export default function Navbar() {
             spacing={6}>
 
             <Button
-              as={'a'}
               display={{ base: 'none', md: 'inline-flex' }}
               fontSize={'sm'}
               fontWeight={600}
-              href={'/leaderboard'}
               colorScheme='teal'
               variant={'outline'}
+              onClick={defaulterModal.onOpen}
             >
-              Leaderboard
+              Defaulters
             </Button>
+
+            <Link to="/leaderboard">
+              <Button
+                display={{ base: 'none', md: 'inline-flex' }}
+                fontSize={'sm'}
+                fontWeight={600}
+                colorScheme='teal'
+                variant={'outline'}
+              >
+                Leaderboard
+              </Button>
+            </Link>
             {!currentAccount ?
               <Button
                 onClick={connectWallet}
@@ -146,6 +201,44 @@ export default function Navbar() {
           <MobileNav />
         </Collapse>
       </Box>
+
+      <Modal onClose={defaulterModal.onClose} size={'2xl'} isOpen={defaulterModal.isOpen} isCentered>
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>DAO Defaulters</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            {
+              defaulters.length > 0 ? (
+                <TableContainer>
+                  <Table variant='simple'>
+                    {/* <TableCaption>Imperial to metric conversion factors</TableCaption> */}
+                    <Thead>
+                      <Tr>
+                        <Th>Addresses</Th>
+                        <Th>Loan</Th>
+                      </Tr>
+                    </Thead>
+                    <Tbody>
+                      {defaulters.map((defaulter, index) => (
+                        <Tr key={index}>
+                          <Td>{defaulter.address}</Td>
+                          <Td>{defaulter.loan}</Td>
+                        </Tr>
+                      ))}
+                    </Tbody>
+                  </Table>
+                </TableContainer>
+              ) : (
+                <Text textAlign={'center'}>No defaulters</Text>
+              )
+            }
+          </ModalBody>
+          <ModalFooter>
+            {/* <Button onClick={defaulterModal.onClose}>Close</Button> */}
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
     </>
   );
 }

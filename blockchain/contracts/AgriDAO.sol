@@ -12,7 +12,7 @@ contract AgroDAO {
     uint256 private constant INITIAL_TOKEN_AMOUNT = 1000000000;
     address private immutable maintainer;
     uint256 private constant INITIAL_USER_AMOUNT = 1000;
-    uint256 private constant LOAN_TIME = 20 seconds;
+    uint256 private constant LOAN_TIME = 30 seconds;
     address public agriTokenAddress;
 
     // address public chainLinkAddress;
@@ -29,6 +29,8 @@ contract AgroDAO {
         string name;
         uint256 timestamp;
     }
+
+    uint256 counter;
 
     // join the dao
     mapping(address => Farmer) public members;
@@ -77,7 +79,7 @@ contract AgroDAO {
             "Already part of the DAO"
         );
 
-        require(msg.value >= 0.01 ether, "Please send exactly 0.01 ETH");
+        require(msg.value >= 0.002 ether, "Please send exactly 0.002 ETH");
 
         members[user] = Farmer(
             user,
@@ -131,6 +133,7 @@ contract AgroDAO {
     }
 
     struct proposal {
+        uint256 proposalIndex;
         string description;
         address owner;
         uint256 amount;
@@ -188,6 +191,7 @@ contract AgroDAO {
         uint256 endTime = startTime + _duration;
 
         proposal memory newProposal;
+        newProposal.proposalIndex = counter;
         newProposal.description = _description;
         newProposal.owner = msg.sender;
         newProposal.amount = _amount;
@@ -196,6 +200,8 @@ contract AgroDAO {
         newProposal.endTime = endTime;
         newProposal.votesFor = 0;
         newProposal.votesAgainst = 0;
+
+        counter++;
         proposals.push(newProposal);
 
         emit ProposalCreated(
@@ -258,7 +264,9 @@ contract AgroDAO {
         ].amount;
 
         fac.loan = proposals[_proposalIndex].amount; // add interest too
-        loanTimer[msg.sender] = block.timestamp + LOAN_TIME;
+        loanTimer[proposals[_proposalIndex].owner] =
+            block.timestamp +
+            LOAN_TIME;
         proposals[_proposalIndex].isExecuted = true;
     }
 
@@ -386,13 +394,22 @@ contract AgroDAO {
             block.timestamp - loanTimer[addr] > 0);
     }
 
-    event PaymentDone(address recipient, uint256 amount);
+    event PaymentDue(address recipient, uint256 amount);
+
+    address[] public defaulters;
 
     function checkPayment() public {
+        delete defaulters; // resets the defaulters array everytime its called
+
         for (uint256 i = 0; i < daoMembers.length; ++i) {
             if (paymentDue(daoMembers[i])) {
-                emit PaymentDone(daoMembers[i], loanTimer[daoMembers[i]]);
+                defaulters.push(daoMembers[i]);
+                emit PaymentDue(daoMembers[i], loanTimer[daoMembers[i]]);
             }
         }
+    }
+
+    function viewDefaulters() public view returns (address[] memory) {
+        return defaulters;
     }
 }

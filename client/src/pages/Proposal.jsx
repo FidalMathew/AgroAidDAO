@@ -173,22 +173,23 @@ const Proposal = () => {
                     for (let i = 0; i < res.length; i++) {
                         const proposalId = res[i];
                         const proposalValue = {
-                            proposalId: i,
-                            description: proposalId[0],
-                            owner: proposalId[1],
-                            amount: Number(proposalId[2]),
-                            isExecuted: proposalId[3],
-                            startTime: convertDateAndTime(proposalId[4]._hex),
-                            endTime: convertDateAndTime(proposalId[5]._hex),
-                            votesFor: Number(proposalId[6]),
-                            votesAgainst: Number(proposalId[7]),
-                            voters: proposalId[8],
+                            proposalId: Number(proposalId[0]),
+                            description: proposalId[1],
+                            owner: proposalId[2],
+                            amount: Number(proposalId[3]),
+                            isExecuted: proposalId[4],
+                            startTime: convertDateAndTime(proposalId[5]._hex),
+                            endTime: convertDateAndTime(proposalId[6]._hex),
+                            votesFor: Number(proposalId[7]),
+                            votesAgainst: Number(proposalId[8]),
+                            voters: proposalId[9],
                         }
                         proposalList.push(proposalValue);
                     }
-                    console.log(proposalList[id], 'proposalList')
+                    proposalList[id].amount = Number(proposalList[id].amount) / 10 ** 18
+                    console.log(proposalList[id].voters)
+                    console.log("this is my ", currentAccount)
                     setProposal(proposalList[id]);
-
                     setEndTime(endTime)
                 }
             } catch (error) {
@@ -196,16 +197,24 @@ const Proposal = () => {
             }
         }
         getAllProposals();
-    }, [daoContract, location, id])
+    }, [daoContract, location, id, currentAccount, hasVoted])
 
 
     useEffect(() => {
-        if(proposal.voters !==undefined){
+        if (proposal.voters !== undefined) {
+            const lowercaseVoters = proposal.voters.map((voter) => voter.toLowerCase());
             console.log(proposal.voters.includes(currentAccount), 'has voted or not 1')
-            console.log(proposal.voters, 'has voted or not 1')
+            console.log(lowercaseVoters, 'has voted or not 1')
             console.log(expired, 'has voted or not expired')
+            // set hasVoted based on if the current account is in the voters array
+            if (lowercaseVoters.includes(currentAccount)) {
+                setHasVoted(true)
+            }
+            else {
+                setHasVoted(false)
+            }
         }
-    }, [proposal, location, id]);
+    }, [proposal, location, id, hasVoted]);
 
 
     const end = new Date(proposal.endTime)
@@ -218,35 +227,73 @@ const Proposal = () => {
         ])
     }, [id, location, hasVoted, proposal])
 
+    const [executeProposalLoading, setExecuteProposalLoading] = useState(false)
+
+    const executeProposals = async (prop) => {
+        setExecuteProposalLoading(true)
+        if (daoContract) {
+            try {
+                const res = await daoContract.executeProposal(prop);
+                console.log(res)
+                setIsExecuted(true)
+                setCanExecute(false)
+                toast({
+                    title: "Proposal Executed.",
+                    description: "Executed",
+                    status: "success",
+                    duration: 9000,
+                    isClosable: true,
+                })
+            }
+            catch (err) {
+                console.log(err)
+                setIsExecuted(false)
+                setCanExecute(false)
+                toast({
+                    title: "Error Executing Proposal.",
+                    description: "Error",
+                    status: "error",
+                    duration: 9000,
+                    isClosable: true,
+                })
+            }
+            finally{
+                setExecuteProposalLoading(false)
+            }
+        }
+    }
+
+    useEffect(()=> {
+        if (proposal.isExecuted) {
+            setIsExecuted(true);
+        }
+    }, [isExecuted])
 
     useEffect(() => {
- 
+        if (end < now) {
+            setExpired(true)
+        }
+        else {
+            const daysRemaining = (Math.ceil((end - now) / (1000 * 60 * 60 * 24)))
+            setDayRem(daysRemaining)
+        }
+        if (proposal.isExecuted) {
+            setIsExecuted(true);
+        }
+        setCurrTime(now);
+        setEndTime(end);
 
-            if (end < now) {
-                setExpired(true)
-            }
-            else {
-                const daysRemaining = (Math.ceil((end - now) / (1000 * 60 * 60 * 24)))
-                setDayRem(daysRemaining)
-            }
-            if (proposal.isExecuted) {
-                setIsExecuted(true);
-            }
-            setCurrTime(now);
-            setEndTime(end);
-      
-    }, [proposal])
+    }, [now, end])
 
     useEffect(() => {
         if (proposal !== {}) {
-
             if (end > now) {
                 const minutes = Math.ceil((end - now) / (1000 * 60))
                 setTimeLeft(minutes);
             }
             else {
                 setTimeLeft(0);
-                setExpired(true);
+                // setExpired(true);
             }
         }
     }, [now])
@@ -258,9 +305,23 @@ const Proposal = () => {
             navigate('/connectwallet')
         }
     }, [currentAccount])
-
-    console.log(proposal, 'proposal in dimag')
-
+    const [canExecute, setCanExecute] = useState(false);
+    useEffect(() => {
+        const disableButton = () => {
+            if (expired) {
+                if (proposal.votesFor > proposal.votesAgainst) {
+                    setCanExecute(true);
+                }
+                else {
+                    setCanExecute(false);
+                }
+            }
+            else {
+                setCanExecute(false);
+            }
+        }
+        disableButton();
+    }, [expired, proposal, hasVoted])
 
     return (
         <>
@@ -326,7 +387,7 @@ const Proposal = () => {
                                     <Text fontSize="sm" fontWeight={"semibold"}>Status</Text>
                                     {/* <PulseComponent status={"expired"} />  */}
                                     {/*  status === "pending" ? "Pending" : status === "completed" ? "Done" : status == "expired" && "Expired" */}
-                                    <PulseComponent status={{ isExecuted } === true ? "completed" : currTime >= endTime ? "expired" : "pending"} />
+                                    <PulseComponent status={isExecuted === true ? "completed" : currTime >= endTime ? "expired" : "pending"} />
                                 </SimpleGrid>
                                 <SimpleGrid border="1px" p="5" w="full" rounded="md" columns={{ base: 1 }} spacing={"2"}>
                                     <Text fontSize="sm" fontWeight={"semibold"}>Time Left</Text>
@@ -370,12 +431,17 @@ const Proposal = () => {
                                     </Button>
                                 </Tooltip>
                                 <Tooltip
-                                    label={expired ? "Voting has expired" : ""}
+                                    label={isExecuted ? "Proposal has already been executed" : !expired ? "Voting has not expired" : proposal?.owner?.toLowerCase() != currentAccount.toLowerCase() ? "You cannot execute this proposal" : ""}
                                 >
                                     <Button
+                                        loadingText="Executing..."
+                                        isLoading={executeProposalLoading}
                                         colorScheme="teal"
                                         rightIcon={<RepeatClockIcon color="yellow.500" />} variant="outline" size="md" w="full" mx={'auto'}
-                                        isDisabled={!expired || isExecuted}
+                                        isDisabled={
+                                            !expired || !canExecute || proposal?.owner?.toLowerCase() != currentAccount.toLowerCase() || isExecuted
+                                        }
+                                        onClick={() => executeProposals(id)}
                                     >
                                         Execute Proposal
                                     </Button>

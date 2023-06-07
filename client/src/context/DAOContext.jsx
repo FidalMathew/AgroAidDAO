@@ -1,24 +1,28 @@
 import { createContext, useState, useEffect } from "react"
 import TokenABI from "../utils/Token.json"
+import CurrencyABI from "../utils/Currency.json"
 import AgroDAOabi from "../utils/AgroDAO.json"
 import { ethers } from "ethers";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@chakra-ui/react";
+import useCurrentLocation from "../hooks/useCurrentLocation";
+import axios from "axios";
 
 export const DAOContext = createContext();
 
 const DAOContextprovider = ({ children }) => {
 
+    const { currency, currencySymbol } = useCurrentLocation();
+
     const [chainId, setChainId] = useState("")
     const [currentAccount, setCurrentAccount] = useState("")
     const [errorPage, setErrorPage] = useState(false)
-    const contractAddress = "0x8FD67C501E49FC60FA702cE9a42AE102f81D6713"
+    const contractAddress = "0x9B85ED51dD33d2B9BC43679c4241578563bD8A62";
     const [daoContract, setdaoContract] = useState("");
     const [ethBalance, setEthBalance] = useState(0);
     const { ethereum } = window;
     const navigate = useNavigate()
     const toast = useToast()
-
 
 
     const getContract = async () => {
@@ -190,7 +194,7 @@ const DAOContextprovider = ({ children }) => {
         setJoinLoading(true);
         try {
             const transaction = await daoContract.joinDAO(lat, long, name, {
-                value: ethers.utils.parseEther('0.01')
+                value: ethers.utils.parseEther('0.002')
             });
             await transaction.wait();
             console.log(transaction, 'transaction')
@@ -217,8 +221,78 @@ const DAOContextprovider = ({ children }) => {
     };
 
 
+    // currency converter chainlink code below
+
+
+
+    const fetchCurrFromUSD = async (amount) => {
+        try {
+            const response = await axios.request(
+                {
+                    method: 'GET',
+                    url: `https://api.api-ninjas.com/v1/convertcurrency?want=${currency}&have=USD&amount=${amount}`,
+                    headers: {
+                        'X-Api-Key': 'rEAsrWsBXFRiqXLWQM9C5w==HX6ULpUlpQXYd5YM'
+                    },
+                }
+            );
+            return response.data.new_amount;
+        } catch (error) {
+            console.error(error);
+        }
+    }
+
+    const currencyConverterAddress = "0x695b4021847A31EBFA7B8bbb2Df179174731e79d";
+    const [maticUSDrate, setMaticUSDrate] = useState(0);
+    const [currAmount, setCurrAmount] = useState(0);
+
+    const fetchAmount = async (amount) => { // matic
+        try {
+            const rateAmt = maticUSDrate * amount;
+            const currAmt = await fetchCurrFromUSD(rateAmt);
+            // console.log("currAmount ", currAmount)
+            setCurrAmount(currAmt);
+        }
+        catch (err) {
+            console.log("err ", err)
+        }
+    }
+
+
+    useEffect(() => {
+        const getCurrenyConverterContract = async () => {
+            const provider = new ethers.providers.Web3Provider(ethereum);
+            const signer = provider.getSigner();
+            const currencyConverterContract = new ethers.Contract(currencyConverterAddress, CurrencyABI, signer);
+
+            try {
+                // console.log("currencyConverterContract ----------", currencyConverterContract)
+                // const transaction = await currencyConverterContract.requestVolumeData();
+                // await transaction.wait();
+                // console.log("transaction ", transaction)
+                // const result = await currencyConverterContract.getEquivalent();
+                // console.log("result ", result);
+
+                const tr = await currencyConverterContract.getLatestData();
+                // console.log("tr = ", Number(tr))
+                setMaticUSDrate(Number(tr) / 100000000)
+            }
+            catch (err) {
+                console.log("err ", err)
+            }
+        }
+        if (ethereum) {
+            getCurrenyConverterContract();
+        }
+    }, [ethereum, CurrencyABI, currencyConverterAddress, currentAccount])
+
+    console.log("currAmount ", currAmount, currencySymbol, currency)
     return (
-        <DAOContext.Provider value={{ ethBalance, connectWallet, currentAccount, switchNetwork, disconnectWallet, daoContract, join, joinLoading }}>
+        <DAOContext.Provider value={{
+            ethBalance, connectWallet,
+            currentAccount, switchNetwork, disconnectWallet, daoContract,
+            join, joinLoading, currAmount, currency, currencySymbol, fetchAmount
+        }}>
             {children}
         </DAOContext.Provider>
     )

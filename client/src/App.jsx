@@ -24,6 +24,7 @@ function App() {
           <Route path="/dao/" element={<DAO />} />
           <Route path="/proposal/:id" element={<Proposal />} />
           <Route path="/leaderboard" element={<Leaderboard />} />
+          <Route path="/defaulter" element={<Connectwallet />} />
         </Route>
         <Route element={<PrivateRoutes />}>
           <Route path="/connectwallet" element={<Connectwallet />} />
