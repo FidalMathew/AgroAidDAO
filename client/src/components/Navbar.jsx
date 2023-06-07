@@ -34,6 +34,11 @@ import {
   Td,
   Tfoot,
   Badge,
+  FormControl,
+  FormLabel,
+  Input,
+  FormErrorMessage,
+  useToast,
 } from '@chakra-ui/react';
 import {
   HamburgerIcon,
@@ -45,11 +50,16 @@ import ToggleTheme from './Toggletheme';
 import useGlobalContext from '../hooks/useGlobalContext';
 import { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { Field, Formik } from 'formik';
+import * as Yup from 'yup';
+import { ethers } from 'ethers';
 
 export default function Navbar() {
   const { isOpen, onToggle } = useDisclosure();
   const defaulterModal = useDisclosure()
+  const contributeModal = useDisclosure()
   const navigate = useNavigate()
+  const toast = useToast()
 
 
   const { connectWallet, currentAccount, disconnectWallet, daoContract } = useGlobalContext()
@@ -85,6 +95,42 @@ export default function Navbar() {
     fetchDefaulters()
     console.log('defaulters', defaulters)
   }, [daoContract])
+
+  const [contributeLoading, setContributeLoading] = useState(false)
+
+  const ContributeDAO = async (amount) => {
+    setContributeLoading(true)
+    try {
+      if (daoContract) {
+        setContributeLoading(true)
+        const transaction = await daoContract.fundDAO({
+          value: ethers.utils.parseEther(amount.toString())
+        });
+        await transaction.wait()
+        console.log(transaction)
+        contributeModal.onClose()
+        toast({
+          title: 'Success',
+          description: 'Contribution successful',
+          status: 'success',
+          duration: 5000,
+          isClosable: true,
+        })
+      }
+    } catch (error) {
+      console.log(error)
+      toast({
+        title: 'Error',
+        description: "Couldn't contribute",
+        status: 'error',
+        duration: 5000,
+        isClosable: true,
+      })
+      setContributeLoading(false)
+    } finally {
+      setContributeLoading(false)
+    }
+  }
 
 
   return (
@@ -139,8 +185,18 @@ export default function Navbar() {
               fontSize={'sm'}
               fontWeight={600}
               colorScheme='teal'
+              variant={'solid'}
+              onClick={contributeModal.onOpen}
+            >
+              Contribute
+            </Button>
+            <Button
+              display={{ base: 'none', md: 'inline-flex' }}
+              fontSize={'sm'}
+              fontWeight={600}
+              colorScheme='teal'
               variant={'outline'}
-              onClick={defaulterModal.onOpen}
+              onClick={contributeModal.onOpen}
             >
               Defaulters
             </Button>
@@ -233,6 +289,58 @@ export default function Navbar() {
                 <Text textAlign={'center'}>No defaulters</Text>
               )
             }
+          </ModalBody>
+          <ModalFooter>
+            {/* <Button onClick={defaulterModal.onClose}>Close</Button> */}
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+
+      <Modal onClose={contributeModal.onClose} size={'2xl'} isOpen={contributeModal.isOpen} isCentered>
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>Contribute DAO</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            <Formik
+              initialValues={{ amount: '' }}
+              validationSchema={Yup.object({
+                amount: Yup.number().min(0, 'Amount can not be less than zero').required('Amount is required')
+            })}
+              onSubmit={(values, action) => {
+                ContributeDAO(values.amount)
+                console.log(values)
+                action.resetForm()
+              }}
+            >
+              {
+                (formik) => (
+                  <form onSubmit={formik.handleSubmit}>
+                    <FormControl id="amount"
+                      isInvalid={formik.errors.amount && formik.touched.amount}
+                    >
+                      <FormLabel>Amount</FormLabel>
+                      <Field
+                        type="number"
+                        name="amount"
+                        placeholder="Enter amount"
+                        as={Input}
+                      />
+                      <FormErrorMessage>{formik.errors.amount}</FormErrorMessage>
+                    </FormControl>
+                    <Button
+                      mt={4}
+                      colorScheme="teal"
+                      loadingText="Contributing..."
+                      isLoading={contributeLoading}
+                      type="submit"
+                    >
+                      Contribute
+                    </Button>
+                  </form>
+                )
+              }
+            </Formik>
           </ModalBody>
           <ModalFooter>
             {/* <Button onClick={defaulterModal.onClose}>Close</Button> */}

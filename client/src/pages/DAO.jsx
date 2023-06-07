@@ -204,7 +204,7 @@ const DAO = () => {
                 votesAgainst: Number(votesAgainst),
                 voters: voters,
             },
-            ...fetchedProposals, 'checking fetched proposals')
+                ...fetchedProposals, 'checking fetched proposals')
             setFetchedProposals(prevState => [
                 {
                     proposalId: fetchedProposals.length,
@@ -295,45 +295,65 @@ const DAO = () => {
                     ))}
                 </VStack>
                 {/*  */}
-
-                <Box
-                    rounded={'lg'}
-                    bg={useColorModeValue('white', 'gray.700')}
-                    boxShadow={'lg'}
-                    p={8}
-                    w="lg"
-                    ml={{ base: "auto", md: 10 }}
-                    mr={{ base: "auto", md: 10 }}
-                    mt={{ base: 10, lg: 0 }}
+                <VStack
+                    spacing={10}
                 >
-                    <Formik
-                        initialValues={{
-                            // title: '',
-                            description: '',
-                            askForPayment: false,
-                            amount: 0,
-                        }}
-
-                        validationSchema={Yup.object({
-                            // title: Yup.string().required('Title is required'),
-                            description: Yup.string().required('Description is required'),
-                            askForPayment: Yup.boolean(),
-                            // amount can't be less than zero
-                            amount: Yup.number().min(0, 'Amount can not be less than zero')
-                        })}
-
-                        onSubmit={(value, action) => {
-                            CreateProposal(value.description, value.amount);
-                            // console.log(value, 'value')
-                            action.resetForm();
-                        }}
+                    {/* <Box
+                        // border="1px solid"
+                        // borderColor="gray.400"
+                        rounded="md"
+                        h="10vh"
+                        w="85%"
+                        m="auto"
                     >
-                        {formik => (
-                            <form onSubmit={formik.handleSubmit}>
+                        <Button 
+                            variant="solid"
+                            colorScheme="blue"
+                            size="lg"
+                            w="100%"
+                            h="100%"
+                            >
+                                Contribute to DAO
+                            </Button>
+                    </Box> */}
+                    <Box
+                        rounded={'lg'}
+                        bg={useColorModeValue('white', 'gray.700')}
+                        boxShadow={'lg'}
+                        p={8}
+                        w="lg"
+                        ml={{ base: "auto", md: 10 }}
+                        mr={{ base: "auto", md: 10 }}
+                        mt={{ base: 10, lg: 0 }}
+                    >
+                        <Formik
+                            initialValues={{
+                                // title: '',
+                                description: '',
+                                askForPayment: false,
+                                amount: 0,
+                            }}
 
-                                <Heading size="md" pb={5} textAlign={"center"}>Create Proposals</Heading>
-                                <Stack spacing={4}>
-                                    {/* <FormControl
+                            validationSchema={Yup.object({
+                                // title: Yup.string().required('Title is required'),
+                                description: Yup.string().required('Description is required'),
+                                askForPayment: Yup.boolean(),
+                                // amount can't be less than zero
+                                amount: Yup.number().min(0, 'Amount can not be less than zero')
+                            })}
+
+                            onSubmit={(value, action) => {
+                                CreateProposal(value.description, value.amount);
+                                // console.log(value, 'value')
+                                action.resetForm();
+                            }}
+                        >
+                            {formik => (
+                                <form onSubmit={formik.handleSubmit}>
+
+                                    <Heading size="md" pb={5} textAlign={"center"}>Create Proposals</Heading>
+                                    <Stack spacing={4}>
+                                        {/* <FormControl
                                         id="title"
                                         isInvalid={formik.errors.title && formik.touched.title}
                                     >
@@ -341,82 +361,82 @@ const DAO = () => {
                                         <Field name="title" as={Input} placeholder="Enter proposal title" />
                                         <FormErrorMessage fontSize="xs">{formik.errors.title}</FormErrorMessage>
                                     </FormControl> */}
-                                    <FormControl id="description"
-                                        isInvalid={formik.errors.description && formik.touched.description}
-                                    >
-                                        <FormLabel>Description</FormLabel>
-                                        <Field name="description" as={Textarea} placeholder="Enter proposal description" />
-                                        <FormErrorMessage fontSize="xs">{formik.errors.description}</FormErrorMessage>
-                                    </FormControl>
-                                    <Stack spacing={5}>
-                                        <Stack
-                                            direction={{ base: 'column', sm: 'row' }}
-                                            align={'start'}
-                                            justify={'start'}>
-                                            <FormControl
-                                                id="askForPayment"
-                                                isInvalid={formik.errors.askForPayment && formik.touched.askForPayment}
-                                            >
-                                                <Field
-                                                    onChange={
-                                                        (e) => {
-                                                            setChecked((prev) => !prev)
-                                                        }
-                                                    }
-                                                    name="askForPayment" as={Checkbox}>Ask for Payment?</Field>
-                                                <FormErrorMessage fontSize="xs">{formik.errors.askForPayment}</FormErrorMessage>
-                                            </FormControl>
-                                        </Stack>
-                                        <FormControl
-                                            id="amount"
-                                            isInvalid={formik.errors.amount && formik.touched.amount}
+                                        <FormControl id="description"
+                                            isInvalid={formik.errors.description && formik.touched.description}
                                         >
-                                            <Field name="amount">
-                                                {({ field, form }) => (
-                                                    <div>
-                                                        <NumberInput
-                                                            {...field}
-                                                            value={formik.values.amount}
-                                                            onChange={(value) => form.setFieldValue(field.name, value)}
-                                                            placeholder="Enter amount.."
-                                                            isDisabled={!checked}
-                                                            clampValueOnBlur={false}
-                                                            min={0.01}
-                                                        >
-                                                            <NumberInputField />
-                                                            <NumberInputStepper>
-                                                                <NumberIncrementStepper />
-                                                                <NumberDecrementStepper />
-                                                            </NumberInputStepper>
-                                                        </NumberInput>
-                                                        <FormErrorMessage fontSize="xs">
-                                                            {formik.errors.amount}
-                                                        </FormErrorMessage>
-                                                    </div>
-                                                )}
-                                            </Field>
+                                            <FormLabel>Description</FormLabel>
+                                            <Field name="description" as={Textarea} placeholder="Enter proposal description" />
+                                            <FormErrorMessage fontSize="xs">{formik.errors.description}</FormErrorMessage>
                                         </FormControl>
+                                        <Stack spacing={5}>
+                                            <Stack
+                                                direction={{ base: 'column', sm: 'row' }}
+                                                align={'start'}
+                                                justify={'start'}>
+                                                <FormControl
+                                                    id="askForPayment"
+                                                    isInvalid={formik.errors.askForPayment && formik.touched.askForPayment}
+                                                >
+                                                    <Field
+                                                        onChange={
+                                                            (e) => {
+                                                                setChecked((prev) => !prev)
+                                                            }
+                                                        }
+                                                        name="askForPayment" as={Checkbox}>Ask for Payment?</Field>
+                                                    <FormErrorMessage fontSize="xs">{formik.errors.askForPayment}</FormErrorMessage>
+                                                </FormControl>
+                                            </Stack>
+                                            <FormControl
+                                                id="amount"
+                                                isInvalid={formik.errors.amount && formik.touched.amount}
+                                            >
+                                                <Field name="amount">
+                                                    {({ field, form }) => (
+                                                        <div>
+                                                            <NumberInput
+                                                                {...field}
+                                                                value={formik.values.amount}
+                                                                onChange={(value) => form.setFieldValue(field.name, value)}
+                                                                placeholder="Enter amount.."
+                                                                isDisabled={!checked}
+                                                                clampValueOnBlur={false}
+                                                                min={0.01}
+                                                            >
+                                                                <NumberInputField />
+                                                                <NumberInputStepper>
+                                                                    <NumberIncrementStepper />
+                                                                    <NumberDecrementStepper />
+                                                                </NumberInputStepper>
+                                                            </NumberInput>
+                                                            <FormErrorMessage fontSize="xs">
+                                                                {formik.errors.amount}
+                                                            </FormErrorMessage>
+                                                        </div>
+                                                    )}
+                                                </Field>
+                                            </FormControl>
 
-                                        <Button
-                                            type="submit"
-                                            bg={'blue.400'}
-                                            color={'white'}
-                                            _hover={{
-                                                bg: 'blue.500',
-                                            }}
-                                            isLoading={proposalLoading}
-                                            loadingText="Creating Proposal.."
-                                        >
-                                            Create Proposal
-                                        </Button>
+                                            <Button
+                                                type="submit"
+                                                bg={'blue.400'}
+                                                color={'white'}
+                                                _hover={{
+                                                    bg: 'blue.500',
+                                                }}
+                                                isLoading={proposalLoading}
+                                                loadingText="Creating Proposal.."
+                                            >
+                                                Create Proposal
+                                            </Button>
+                                        </Stack>
                                     </Stack>
-                                </Stack>
-                            </form>
-                        )}
+                                </form>
+                            )}
 
-                    </Formik>
-                </Box>
-
+                        </Formik>
+                    </Box>
+                </VStack>
                 {/*  */}
                 {/* <VStack
                     // boxShadow={useColorModeValue(
