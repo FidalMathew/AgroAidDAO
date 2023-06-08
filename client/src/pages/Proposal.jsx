@@ -107,7 +107,7 @@ const Proposal = () => {
     const [hasVoted, setHasVoted] = useState(false)
     const [votingLoading1, setVotingLoading1] = useState(false);
     const [votingLoading2, setVotingLoading2] = useState(false);
-    const { daoContract, currentAccount, fetchAmount, maticUSDrate, isETHPrice, togglePrice, toggleCurrency} = useGlobalContext()
+    const { daoContract, currentAccount, fetchAmount, maticUSDrate, isETHPrice, togglePrice, toggleCurrency } = useGlobalContext()
     const { id } = useParams()
     const navigate = useNavigate()
     const [convertedAmount, setConvertedAmount] = useState(null);
@@ -387,13 +387,7 @@ const Proposal = () => {
                                 {/* <StatsCard title={'Time left'} stat={'10 mins'} /> */}
                                 <StatsCard
                                     title={proposal?.amount === 0 ? "" : "Amount Requested"}
-                                    stat={
-                                        proposal?.amount === 0
-                                            ? "General Proposal"
-                                            : convertedAmount != null
-                                                ? convertedAmount + " " + toggleCurrency
-                                                : "Loading..."
-                                    }
+                                    stat={isETHPrice ? proposal.amount + " ETH" : (convertedAmount ? convertedAmount + " " + currency : "Loading...")}
                                 />
                             </HStack>
                             <Box border={"1px"} rounded={"xl"} >

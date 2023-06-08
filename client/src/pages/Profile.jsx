@@ -30,11 +30,16 @@ function StatsCard(props) {
 
 const Profile = () => {
     const { id } = useParams()
-    const { daoContract, ethBalance, currentAccount,currency, setEthBalance ,isETHPrice, fetchAmount } = useGlobalContext()
+    const { daoContract, ethBalance, currentAccount, currency, isETHPrice, fetchAmount } = useGlobalContext()
     const location = useLocation()
     const [proposal, setProposal] = useState({})
     const [loanPaid, setLoanPaid] = useState(false)
-    const [convertedBalance, setConvertedBalance] = useState(ethBalance);
+
+    let ethBal = Number(ethBalance).toFixed(4);
+    console.log(ethBal, 'ethBal')
+    const [convertedBalance, setConvertedBalance] = useState(ethBal);
+    const [convertedLoan, setConvertedLoan] = useState(0);
+
     // const {currency} = useCurrentLocation()
     const [agrotokenBalance, setAgrotokenBalance] = useState(0)
     const [user, setUser] = useState({
@@ -136,7 +141,6 @@ const Profile = () => {
                     // convertDateAndTime(loanDue._hex)
                     setLoanDueDate(convertDateAndTime(loanDue._hex))
 
-
                 }
             } catch (error) {
                 console.log(error)
@@ -144,6 +148,18 @@ const Profile = () => {
         }
         getLoanTimer();
     }, [daoContract, id])
+
+    const [isLoanDue, setIsLoanDue] = useState(false)
+
+    useEffect(() => {
+        const isLoanDueFunc = () => {
+            const currentDate = new Date();
+            const loanDue = new Date(loanDueDate);
+            setIsLoanDue(currentDate > loanDue)
+        }
+        if (loanDueDate)
+            isLoanDueFunc();
+    }, [loanDueDate])
 
 
 
@@ -183,17 +199,26 @@ const Profile = () => {
             setPayLoanLoading(false)
         }
     }
-    
-    useEffect(()=> {
-        const a = async ()=>{
-            if(isETHPrice && ethBalance) {
-                const amount = await fetchAmount(ethBalance)
+
+    useEffect(() => {
+        const a = async () => {
+            console.log("dsadas ----", isETHPrice, currency, ethBalance)
+            if (currency && ethBalance) {
+                const amount = await fetchAmount(ethBalance, currency)
                 console.log(amount, 'amt')
                 setConvertedBalance(amount.toFixed(2))
+                //
+                if (user.loan > 0) {
+                    const amount = await fetchAmount((user.loan / Math.pow(10, 18)), currency)
+                    setConvertedLoan(amount)
+                }
+                else {
+                    setConvertedLoan(0)
+                }
             }
         }
         a()
-    }, [isETHPrice, ethBalance])
+    }, [isETHPrice, ethBalance, currency, fetchAmount, user.loan])
 
     console.log(convertedBalance, 'convertedBalance')
 
@@ -219,6 +244,7 @@ const Profile = () => {
                                         <Divider orientation='horizontal' />
                                         <HStack>
                                             <Text>Loan Due Date: <chakra.span fontWeight={"semibold"}>{loanDueDate}</chakra.span> </Text>
+                                            {isLoanDue && <Badge colorScheme="red" >Due</Badge>}
                                         </HStack>
                                     </>
                                 }
@@ -248,11 +274,13 @@ const Profile = () => {
                                         user.loan > 0 ? <Icon as={FaExclamationTriangle} color="red.500" /> : <Icon as={FaCheckCircle} color="green.500" />
                                     }
                                 </HStack>
-                                <Text fontWeight={"semibold"} fontSize={"2xl"}>{Number(user.loan / Math.pow(10, 18))} ETH</Text>
+                                <Text fontWeight={"semibold"} fontSize={"2xl"}>
+                                    {isETHPrice ? user.loan / Math.pow(10, 18) + " ETH" : (convertedLoan ? convertedLoan + " " + currency : "Loading...")}
+                                </Text>
                             </SimpleGrid>
                             <StatsCard
                                 title="Your ETH Balance"
-                                stat={convertedBalance ? convertedBalance : Number(ethBalance).toFixed(2) + " " + currency }
+                                stat={isETHPrice ? Number(ethBalance).toFixed(4).toString() + " ETH" : (convertedBalance ? convertedBalance + " " + currency : "Loading...")}
                             />
                             <StatsCard title={'Country'} stat={country} />
                         </Stack>
@@ -286,16 +314,6 @@ const Profile = () => {
                                                             <Badge colorScheme="red">Not Executed</Badge>
                                                         )}
                                                     </Td>
-                                                    {/* {
-                                                        item.amount > 0 ?
-                                                            <Td textAlign="center">
-                                                                <Button colorScheme="teal" size="sm" onClick={() => payLoan(item.amount)}>Pay</Button>
-                                                            </Td>
-                                                            :
-                                                            <Td textAlign="center">
-                                                                <Button colorScheme="teal" size="sm" disabled>Paid</Button>
-                                                            </Td>
-                                                    } */}
                                                 </Tr>
                                             );
                                         })}

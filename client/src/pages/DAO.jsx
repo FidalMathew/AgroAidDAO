@@ -254,7 +254,7 @@ const DAO = () => {
             }
         };
 
-        if (!isETHPrice) {
+        if (!isETHPrice && daoBalance !== 0 && currency) {
             getConvertedAmount();
         }
     }, [isETHPrice, daoBalance, currency]);

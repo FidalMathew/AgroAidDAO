@@ -184,7 +184,7 @@ export default function Navbar() {
             spacing={6}>
             <Button onClick={togglePrice}>
               {
-                isETHPrice ? 'Toggle to ETH' : `Toggle to ${currency}`
+                !isETHPrice ? 'Toggle to ETH' : `Toggle to ${currency}`
               }
             </Button>
 

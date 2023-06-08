@@ -23,7 +23,7 @@ const DAOContextprovider = ({ children }) => {
     const { ethereum } = window;
     const navigate = useNavigate()
     const toast = useToast()
-    const [isETHPrice, setIsETHPrice] = useState(false);
+    const [isETHPrice, setIsETHPrice] = useState(true);
     const [toggleCurrency, setToggleCurrency] = useState("ETH");
 
 
@@ -35,11 +35,10 @@ const DAOContextprovider = ({ children }) => {
         const AgridaoContract = new ethers.Contract(contractAddress, AgroDAOabi, signer);
 
 
-        AgridaoContract.getDAOBalance().then((res) => {
-            console.log("res ", Number(res));
-        }).catch(err => console.log(err))
+        // AgridaoContract.getDAOBalance().then((res) => {
+        //     console.log("res ", Number(res));
+        // }).catch(err => console.log(err))
         setdaoContract(AgridaoContract)
-        console.log("AgridaoContract ", AgridaoContract)
     }
 
     useEffect(() => {
@@ -200,7 +199,6 @@ const DAOContextprovider = ({ children }) => {
                 value: ethers.utils.parseEther('0.002')
             });
             await transaction.wait();
-            console.log(transaction, 'transaction')
             toast({
                 title: "Joined DAO.",
                 description: "You can now use the app.",
@@ -256,7 +254,7 @@ const DAOContextprovider = ({ children }) => {
     const [maticUSDrate, setMaticUSDrate] = useState(0);
     const [currAmount, setCurrAmount] = useState(0);
 
-   
+
 
 
     useEffect(() => {
@@ -266,15 +264,8 @@ const DAOContextprovider = ({ children }) => {
             const currencyConverterContract = new ethers.Contract(currencyConverterAddress, CurrencyABI, signer);
 
             try {
-                // console.log("currencyConverterContract ----------", currencyConverterContract)
-                // const transaction = await currencyConverterContract.requestVolumeData();
-                // await transaction.wait();
-                // console.log("transaction ", transaction)
-                // const result = await currencyConverterContract.getEquivalent();
-                // console.log("result ", result);
 
                 const tr = await currencyConverterContract.getLatestData();
-                // console.log("tr = ", Number(tr))
                 setMaticUSDrate(Number(tr) / 100000000)
             }
             catch (err) {
@@ -287,16 +278,20 @@ const DAOContextprovider = ({ children }) => {
     }, [ethereum, CurrencyABI, currencyConverterAddress, currentAccount])
 
 
-     const fetchAmount = async (amount, curr) => { // matic
-        try {
-            const rateAmt = maticUSDrate * amount;
-            const currAmt = await fetchCurrFromUSD(rateAmt, curr);
-            console.log("currAmt from context", currAmt)
-            return currAmt
-        }
-        catch (err) {
-            console.log("err ", err)
-            return err;
+    const fetchAmount = async (amount, curr) => { // matic
+
+        if (amount && curr) {
+
+            try {
+
+                const rateAmt = maticUSDrate * amount;
+                const currAmt = await fetchCurrFromUSD(rateAmt, curr);
+                return currAmt
+            }
+            catch (err) {
+                console.log("err ", err)
+                return err;
+            }
         }
     }
 
@@ -307,7 +302,7 @@ const DAOContextprovider = ({ children }) => {
         <DAOContext.Provider value={{
             ethBalance, connectWallet,
             currentAccount, switchNetwork, disconnectWallet, daoContract,
-            join, joinLoading, currAmount, currency, currencySymbol, fetchAmount, currAmount, maticUSDrate, isETHPrice, togglePrice, setIsETHPrice, toggleCurrency, currency, setEthBalance
+            join, joinLoading, currAmount, currency, currencySymbol, fetchAmount, maticUSDrate, isETHPrice, togglePrice, setIsETHPrice, toggleCurrency, setEthBalance
         }}>
             {children}
         </DAOContext.Provider>
