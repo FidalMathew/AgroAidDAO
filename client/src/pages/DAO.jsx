@@ -29,13 +29,13 @@ import * as Yup from 'yup';
 import { useState } from "react";
 import useGlobalContext from "../hooks/useGlobalContext";
 import { ethers } from "ethers";
+import useCurrentLocation from "../hooks/useCurrentLocation";
 
 const DAO = () => {
     const toast = useToast()
     const [checked, setChecked] = useState(false)
-
-
-    const { daoContract, fetchAmount } = useGlobalContext();
+    const { currency } = useCurrentLocation()
+    const { daoContract, fetchAmount, maticUSDrate, isETHPrice, togglePrice } = useGlobalContext();
 
     const [daoBalance, setDaoBalance] = useState(0);
     const [daoToken, setDaoToken] = useState(0);
@@ -49,6 +49,8 @@ const DAO = () => {
     const [Completed, setCompleted] = useState(false);
     const [currTime, setCurrTime] = useState(0);
     const [endTime, setEndTime] = useState(0);
+    const [convertedAmount, setConvertedAmount] = useState(null);
+    const [hasCreatedProposal, setHasCreatedProposal] = useState(false);
 
     const now = new Date()
 
@@ -57,9 +59,12 @@ const DAO = () => {
     }, [now])
 
     useEffect(() => {
-        if (daoContract) {
-            daoContract.getDAOBalance().then((res) => {
-                setDaoBalance(ethers.utils.formatEther((res)));
+        if (daoContract && currency && maticUSDrate !== 0) {
+            daoContract.getDAOBalance().then(async (res) => {
+                const bal = await fetchAmount(0.001, currency)
+                console.log(bal, 'bal')
+                // setDaoBalance(ethers.utils.formatEther((res)));
+                setDaoBalance(bal);
             }).catch(err => console.log(err))
 
             daoContract.contractTokenBalance().then((res) => {
@@ -88,7 +93,9 @@ const DAO = () => {
                 console.log(err);
             });
         }
-    }, [daoContract])
+    }, [daoContract, currency, maticUSDrate])
+
+
 
     const convertDateAndTime = (timestamp) => {
         // Remove the '0x' prefix and convert the hex timestamp to a decimal number
@@ -140,7 +147,7 @@ const DAO = () => {
                         proposalList.push(proposalValue);
                     }
 
-                    setFetchedProposals(proposalList);
+                    setFetchedProposals(proposalList.reverse());
 
                     setEndTime(endTime)
                 }
@@ -149,7 +156,7 @@ const DAO = () => {
             }
         }
         getAllProposals();
-    }, [daoContract, totalProposal])
+    }, [daoContract, totalProposal, hasCreatedProposal])
 
 
     const [proposalLoading, setProposalLoading] = useState(false);
@@ -168,6 +175,7 @@ const DAO = () => {
                 duration: 9000,
                 isClosable: true,
             });
+            setHasCreatedProposal(true);
         } catch (error) {
             console.log(error, 'create proposal error');
             toast({
@@ -177,6 +185,7 @@ const DAO = () => {
                 duration: 9000,
                 isClosable: true,
             });
+            setHasCreatedProposal(false);
         } finally {
             setProposalLoading(false);
         }
@@ -235,6 +244,23 @@ const DAO = () => {
     }, [daoContract]);
 
 
+    useEffect(() => {
+        const getConvertedAmount = async () => {
+            try {
+                const converted = await fetchAmount(daoBalance, currency);
+                setConvertedAmount(converted);
+            } catch (err) {
+                console.log("Error fetching converted amount: ", err);
+            }
+        };
+
+        if (!isETHPrice) {
+            getConvertedAmount();
+        }
+    }, [isETHPrice, daoBalance, currency]);
+
+    // console.log("convertedAmount", convertedAmount)
+
 
     return (
         <>
@@ -256,7 +282,10 @@ const DAO = () => {
                         </Text>
                     </Container>
                     <SimpleGrid w="70vw" columns={{ base: 1, lg: 4 }} spacing={{ base: 5, lg: 8 }} m="auto">
-                        <StatsCard title={'DAO Balance'} stat={daoBalance.toString() + " ETH"} />
+                        <StatsCard
+                            title={'DAO Balance'}
+                            stat={isETHPrice ? daoBalance.toString() + " ETH" : (convertedAmount ? convertedAmount + " " + currency : "Loading...")}
+                        />
                         <StatsCard title={'AGRO Tokens'} stat={daoToken.toString() + " AGRO"} />
                         <StatsCard title={'No of Proposals active'} stat={totalProposal} />
                         <StatsCard title={'Number of Members'} stat={totalMembers} />
@@ -516,7 +545,7 @@ const DAO = () => {
 
                     <Tbody>
                         {
-                            fetchedProposals.slice().reverse().map((proposal, index) => (
+                            fetchedProposals.map((proposal, index) => (
                                 <Tr key={index}>
                                     <Td><Link to={`/proposal/${proposal.proposalId}`}>
                                         <Text as="u">

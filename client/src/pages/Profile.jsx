@@ -30,10 +30,12 @@ function StatsCard(props) {
 
 const Profile = () => {
     const { id } = useParams()
-    const { daoContract, ethBalance, currentAccount } = useGlobalContext()
+    const { daoContract, ethBalance, currentAccount,currency, setEthBalance ,isETHPrice, fetchAmount } = useGlobalContext()
     const location = useLocation()
     const [proposal, setProposal] = useState({})
-
+    const [loanPaid, setLoanPaid] = useState(false)
+    const [convertedBalance, setConvertedBalance] = useState(ethBalance);
+    // const {currency} = useCurrentLocation()
     const [agrotokenBalance, setAgrotokenBalance] = useState(0)
     const [user, setUser] = useState({
         name: "",
@@ -69,7 +71,7 @@ const Profile = () => {
                 console.log(res, 'profile')
             }).catch(err => console.log(err))
         }
-    }, [daoContract])
+    }, [daoContract, loanPaid])
 
     const convertDateAndTime = (timestamp) => {
         const decimalTimestamp = parseInt(timestamp.substring(2), 16);
@@ -164,6 +166,7 @@ const Profile = () => {
                     duration: 3000,
                     isClosable: true,
                 })
+                setLoanPaid(true)
             }
         } catch (error) {
             console.log(error)
@@ -174,13 +177,25 @@ const Profile = () => {
                 duration: 3000,
                 isClosable: true,
             })
+            setLoanPaid(false)
         }
         finally {
             setPayLoanLoading(false)
         }
     }
+    
+    useEffect(()=> {
+        const a = async ()=>{
+            if(isETHPrice && ethBalance) {
+                const amount = await fetchAmount(ethBalance)
+                console.log(amount, 'amt')
+                setConvertedBalance(amount.toFixed(2))
+            }
+        }
+        a()
+    }, [isETHPrice, ethBalance])
 
-    console.log(Number(user.loan), 'prf')
+    console.log(convertedBalance, 'convertedBalance')
 
     return (
         <>
@@ -198,7 +213,7 @@ const Profile = () => {
                             <VStack direction='column' h='110px' w="100%" p={4} spacing={"4"}>
                                 <Text>Reputation: <chakra.span as="b">{user.reputation}</chakra.span> </Text>
                                 <Divider orientation='horizontal' />
-                                <Text>Your DAO Token: <chakra.span fontWeight={"semibold"}>{agrotokenBalance + " ETH"}</chakra.span> </Text>
+                                <Text>Your DAO Token: <chakra.span fontWeight={"semibold"}>{agrotokenBalance + " AGRO"}</chakra.span> </Text>
                                 {user && Number(user.loan) !== 0 &&
                                     <>
                                         <Divider orientation='horizontal' />
@@ -235,7 +250,10 @@ const Profile = () => {
                                 </HStack>
                                 <Text fontWeight={"semibold"} fontSize={"2xl"}>{Number(user.loan / Math.pow(10, 18))} ETH</Text>
                             </SimpleGrid>
-                            <StatsCard title={'Your ETH Balance'} stat={Number(ethBalance).toFixed(5)} />
+                            <StatsCard
+                                title="Your ETH Balance"
+                                stat={convertedBalance ? convertedBalance : Number(ethBalance).toFixed(2) + " " + currency }
+                            />
                             <StatsCard title={'Country'} stat={country} />
                         </Stack>
                         <Box border="1px solid" borderColor={useColorModeValue('gray.800', 'gray.500')} rounded="lg" w='100%' h='52vh' className='members-list' overflowY={"scroll"}>
@@ -257,9 +275,7 @@ const Profile = () => {
                                                 <Tr key={index}>
                                                     <Link to={`/proposal/${item.proposalId}`}><Td>
                                                         <Text as={ChakraLink}>
-                                                            {item.description.length > 20
-                                                                ? item.description.slice(0, 20) + "..."
-                                                                : item.description}
+                                                            {item.description}
                                                         </Text>
                                                     </Td></Link>
                                                     <Td textAlign="left">{item.amount / Math.pow(10, 18)}</Td>

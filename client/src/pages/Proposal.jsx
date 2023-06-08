@@ -6,6 +6,7 @@ import { useLocation, useNavigate, useParams } from "react-router-dom";
 import useGlobalContext from "../hooks/useGlobalContext";
 import { useState } from "react";
 import { useEffect } from "react";
+import useCurrentLocation from "../hooks/useCurrentLocation";
 // const data = [
 //     { name: 'Group A', value: 1000 },
 //     { name: 'Group B', value: 200 },
@@ -106,9 +107,11 @@ const Proposal = () => {
     const [hasVoted, setHasVoted] = useState(false)
     const [votingLoading1, setVotingLoading1] = useState(false);
     const [votingLoading2, setVotingLoading2] = useState(false);
-    const { daoContract, currentAccount } = useGlobalContext()
+    const { daoContract, currentAccount, fetchAmount, maticUSDrate, isETHPrice, togglePrice, toggleCurrency} = useGlobalContext()
     const { id } = useParams()
     const navigate = useNavigate()
+    const [convertedAmount, setConvertedAmount] = useState(null);
+    const { currency } = useCurrentLocation()
 
 
     const voting = async (proposalIndex, voteVar) => {
@@ -257,13 +260,13 @@ const Proposal = () => {
                     isClosable: true,
                 })
             }
-            finally{
+            finally {
                 setExecuteProposalLoading(false)
             }
         }
     }
 
-    useEffect(()=> {
+    useEffect(() => {
         if (proposal.isExecuted) {
             setIsExecuted(true);
         }
@@ -323,6 +326,21 @@ const Proposal = () => {
         disableButton();
     }, [expired, proposal, hasVoted])
 
+    useEffect(() => {
+        const getConvertedAmount = async () => {
+            try {
+                const converted = await fetchAmount(proposal?.amount, currency);
+                setConvertedAmount(converted);
+            } catch (err) {
+                console.log("Error fetching converted amount: ", err);
+            }
+        };
+
+        if (proposal?.amount !== 0) {
+            getConvertedAmount();
+        }
+    }, [proposal?.amount, currency]);
+
     return (
         <>
             <Navbar />
@@ -365,8 +383,18 @@ const Proposal = () => {
                         </Box>
                         <VStack spacing="6">
                             <HStack w="full">
-                                <StatsCard title={proposal?.amount == 0 ? "" : "Amount Requested"} stat={proposal?.amount == 0 ? "General Proposal" : proposal?.amount + " ETH"} />
+                                {/* <StatsCard title={proposal?.amount == 0 ? "" : "Amount Requested"} stat={proposal?.amount == 0 ? "General Proposal" : proposal?.amount + " ETH"} /> */}
                                 {/* <StatsCard title={'Time left'} stat={'10 mins'} /> */}
+                                <StatsCard
+                                    title={proposal?.amount === 0 ? "" : "Amount Requested"}
+                                    stat={
+                                        proposal?.amount === 0
+                                            ? "General Proposal"
+                                            : convertedAmount != null
+                                                ? convertedAmount + " " + toggleCurrency
+                                                : "Loading..."
+                                    }
+                                />
                             </HStack>
                             <Box border={"1px"} rounded={"xl"} >
                                 <Heading size={"md"} textAlign={"center"} p="3">Voting Details</Heading>

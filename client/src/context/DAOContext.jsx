@@ -23,6 +23,9 @@ const DAOContextprovider = ({ children }) => {
     const { ethereum } = window;
     const navigate = useNavigate()
     const toast = useToast()
+    const [isETHPrice, setIsETHPrice] = useState(false);
+    const [toggleCurrency, setToggleCurrency] = useState("ETH");
+
 
 
     const getContract = async () => {
@@ -225,38 +228,35 @@ const DAOContextprovider = ({ children }) => {
 
 
 
-    const fetchCurrFromUSD = async (amount) => {
+    const fetchCurrFromUSD = async (amount, curr) => {
         try {
             const response = await axios.request(
                 {
                     method: 'GET',
-                    url: `https://api.api-ninjas.com/v1/convertcurrency?want=${currency}&have=USD&amount=${amount}`,
+                    url: `https://api.api-ninjas.com/v1/convertcurrency?want=${curr}&have=USD&amount=${amount}`,
                     headers: {
                         'X-Api-Key': 'rEAsrWsBXFRiqXLWQM9C5w==HX6ULpUlpQXYd5YM'
                     },
                 }
             );
+
             return response.data.new_amount;
         } catch (error) {
             console.error(error);
         }
     }
 
+    const togglePrice = () => {
+        setIsETHPrice((prev) => !prev);
+        setToggleCurrency((prevCurrency) => (prevCurrency === "ETH" ? "INR" : "ETH")); // Update currency
+    };
+
+
     const currencyConverterAddress = "0x695b4021847A31EBFA7B8bbb2Df179174731e79d";
     const [maticUSDrate, setMaticUSDrate] = useState(0);
     const [currAmount, setCurrAmount] = useState(0);
 
-    const fetchAmount = async (amount) => { // matic
-        try {
-            const rateAmt = maticUSDrate * amount;
-            const currAmt = await fetchCurrFromUSD(rateAmt);
-            // console.log("currAmount ", currAmount)
-            setCurrAmount(currAmt);
-        }
-        catch (err) {
-            console.log("err ", err)
-        }
-    }
+   
 
 
     useEffect(() => {
@@ -286,12 +286,28 @@ const DAOContextprovider = ({ children }) => {
         }
     }, [ethereum, CurrencyABI, currencyConverterAddress, currentAccount])
 
-    console.log("currAmount ", currAmount, currencySymbol, currency)
+
+     const fetchAmount = async (amount, curr) => { // matic
+        try {
+            const rateAmt = maticUSDrate * amount;
+            const currAmt = await fetchCurrFromUSD(rateAmt, curr);
+            console.log("currAmt from context", currAmt)
+            return currAmt
+        }
+        catch (err) {
+            console.log("err ", err)
+            return err;
+        }
+    }
+
+
+    console.log('eth price', isETHPrice)
+
     return (
         <DAOContext.Provider value={{
             ethBalance, connectWallet,
             currentAccount, switchNetwork, disconnectWallet, daoContract,
-            join, joinLoading, currAmount, currency, currencySymbol, fetchAmount
+            join, joinLoading, currAmount, currency, currencySymbol, fetchAmount, currAmount, maticUSDrate, isETHPrice, togglePrice, setIsETHPrice, toggleCurrency, currency, setEthBalance
         }}>
             {children}
         </DAOContext.Provider>

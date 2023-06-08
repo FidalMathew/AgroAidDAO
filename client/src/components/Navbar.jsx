@@ -39,6 +39,7 @@ import {
   Input,
   FormErrorMessage,
   useToast,
+  Switch,
 } from '@chakra-ui/react';
 import {
   HamburgerIcon,
@@ -53,6 +54,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { Field, Formik } from 'formik';
 import * as Yup from 'yup';
 import { ethers } from 'ethers';
+import useCurrentLocation from '../hooks/useCurrentLocation';
 
 export default function Navbar() {
   const { isOpen, onToggle } = useDisclosure();
@@ -60,9 +62,10 @@ export default function Navbar() {
   const contributeModal = useDisclosure()
   const navigate = useNavigate()
   const toast = useToast()
+  const { currency } = useCurrentLocation()
 
 
-  const { connectWallet, currentAccount, disconnectWallet, daoContract } = useGlobalContext()
+  const { connectWallet, currentAccount, disconnectWallet, daoContract, togglePrice, isETHPrice } = useGlobalContext()
   // console.log(currentAccount, 'accountss')
 
   const [defaulters, setDefaulters] = useState([])
@@ -179,6 +182,11 @@ export default function Navbar() {
             justify={'flex-end'}
             direction={'row'}
             spacing={6}>
+            <Button onClick={togglePrice}>
+              {
+                isETHPrice ? 'Toggle to ETH' : `Toggle to ${currency}`
+              }
+            </Button>
 
             <Button
               display={{ base: 'none', md: 'inline-flex' }}
@@ -306,7 +314,7 @@ export default function Navbar() {
               initialValues={{ amount: '' }}
               validationSchema={Yup.object({
                 amount: Yup.number().min(0, 'Amount can not be less than zero').required('Amount is required')
-            })}
+              })}
               onSubmit={(values, action) => {
                 ContributeDAO(values.amount)
                 console.log(values)
