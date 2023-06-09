@@ -61,10 +61,11 @@ const DAO = () => {
     useEffect(() => {
         if (daoContract && currency && maticUSDrate !== 0) {
             daoContract.getDAOBalance().then(async (res) => {
-                const bal = await fetchAmount(0.001, currency)
-                console.log(bal, 'bal')
+                console.log(Number(res._hex), 'res')
+                // const bal = await fetchAmount(Number(res._hex), currency)
+                // console.log(bal, 'bal')
                 // setDaoBalance(ethers.utils.formatEther((res)));
-                setDaoBalance(bal);
+                setDaoBalance(Number(res._hex) / 10 ** 18);
             }).catch(err => console.log(err))
 
             daoContract.contractTokenBalance().then((res) => {
