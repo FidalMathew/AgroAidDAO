@@ -174,7 +174,7 @@ export default function Navbar() {
               fontSize='lg'
               fontWeight='extrabold'
             >
-              AgriDAO
+              AgroDAO
             </Text>
           </Flex>
 
@@ -360,7 +360,7 @@ export default function Navbar() {
   );
 }
 
-const MobileNav = ({defaulterModal, contributeModal}) => {
+const MobileNav = ({ defaulterModal, contributeModal }) => {
   return (
     <Stack
       bg={useColorModeValue('white', 'gray.800')}

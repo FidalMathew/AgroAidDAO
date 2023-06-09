@@ -2,7 +2,7 @@ import { Box, Button, Container, HStack, Heading, SimpleGrid, Stack, Stat, StatL
 import Navbar from "../components/Navbar"
 import { PieChart, Pie, Sector, Cell, ResponsiveContainer, Legend } from 'recharts';
 import { CheckIcon, CloseIcon, RepeatClockIcon } from "@chakra-ui/icons";
-import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import useGlobalContext from "../hooks/useGlobalContext";
 import { useState } from "react";
 import { useEffect } from "react";
@@ -339,7 +339,7 @@ const Proposal = () => {
         if (proposal?.amount !== 0) {
             getConvertedAmount();
         }
-    }, [proposal?.amount, currency]);
+    }, [proposal, currency]);
 
     return (
         <>
@@ -348,10 +348,12 @@ const Proposal = () => {
                 <VStack spacing="10">
                     <VStack>
                         <Heading maxW="xl" textAlign={"center"}>{proposal?.description}</Heading>
-                        <Text>initiated by: {proposal?.owner?.toString().slice(0, 5) + "..." + proposal?.owner?.toString().slice(-4)}</Text>
-                        {/* <Text fontSize={"md"}>
-                            {proposal?.description}
-                        </Text> */}
+                        <Text>Initiated by: {" "}
+                            <Link to={`/profile/${proposal.owner}`}>
+                                {proposal?.owner?.toString().slice(0, 5) + "..." + proposal?.owner?.toString().slice(-4)}
+                            </Link>
+                        </Text>
+
                     </VStack>
                     <Stack direction={{ base: "column", xl: "row" }} alignItems={"center"} justifyContent={"center"} minW="50vw" spacing="6">
                         <Box border={"1px"} rounded={"xl"} m="5">
