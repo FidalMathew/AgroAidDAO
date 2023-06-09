@@ -83,7 +83,7 @@ const Home = () => {
                         fontWeight='extrabold'
                         height="30%"
                     >
-                        Welcome to AgriDAO
+                        Welcome to AgroDAO
                     </Text>
                     <Card w={{ base: "100%", lg: "80%" }} m="auto" p="10">
                         <Text textAlign="center" mb="2">
