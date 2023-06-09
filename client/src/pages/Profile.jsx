@@ -275,12 +275,12 @@ const Profile = () => {
                                     }
                                 </HStack>
                                 <Text fontWeight={"semibold"} fontSize={"2xl"}>
-                                    {isETHPrice ? user.loan / Math.pow(10, 18) + " ETH" : (convertedLoan ? convertedLoan + " " + currency : "Loading...")}
+                                    {isETHPrice ? user.loan / Math.pow(10, 18) + " ETH" : (convertedLoan != undefined ? convertedLoan + " " + currency : "Loading...")}
                                 </Text>
                             </SimpleGrid>
                             <StatsCard
                                 title="Your ETH Balance"
-                                stat={isETHPrice ? Number(ethBalance).toFixed(4).toString() + " ETH" : (convertedBalance ? convertedBalance + " " + currency : "Loading...")}
+                                stat={isETHPrice ? Number(ethBalance).toFixed(4).toString() + " ETH" : (convertedBalance != undefined ? convertedBalance + " " + currency : "Loading...")}
                             />
                             <StatsCard title={'Country'} stat={country} />
                         </Stack>

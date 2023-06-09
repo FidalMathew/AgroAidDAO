@@ -382,12 +382,17 @@ const Proposal = () => {
                         </Box>
                         <VStack spacing="6">
                             <HStack w="full">
-                                {/* <StatsCard title={proposal?.amount == 0 ? "" : "Amount Requested"} stat={proposal?.amount == 0 ? "General Proposal" : proposal?.amount + " ETH"} /> */}
-                                {/* <StatsCard title={'Time left'} stat={'10 mins'} /> */}
-                                <StatsCard
-                                    title={proposal?.amount === 0 ? "" : "Amount Requested"}
-                                    stat={isETHPrice ? proposal.amount + " ETH" : (convertedAmount ? convertedAmount + " " + currency : "Loading...")}
-                                />
+                                {
+
+                                    proposal.amount === 0 && <StatsCard title={proposal?.amount == 0 ? "" : "Amount Requested"} stat={proposal?.amount == 0 ? "General Proposal" : proposal?.amount + " ETH"} />
+                                }{
+                                    proposal.amount !== 0 &&
+                                    <StatsCard
+                                        title={proposal?.amount === 0 ? "" : "Amount Requested"}
+
+                                        stat={isETHPrice ? proposal.amount + " ETH" : (convertedAmount != undefined ? convertedAmount + " " + currency : "Loading...")}
+                                    />
+                                }
                             </HStack>
                             <Box border={"1px"} rounded={"xl"} >
                                 <Heading size={"md"} textAlign={"center"} p="3">Voting Details</Heading>

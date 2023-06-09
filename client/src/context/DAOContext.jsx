@@ -17,7 +17,7 @@ const DAOContextprovider = ({ children }) => {
     const [chainId, setChainId] = useState("")
     const [currentAccount, setCurrentAccount] = useState("")
     const [errorPage, setErrorPage] = useState(false)
-    const contractAddress = "0x9B85ED51dD33d2B9BC43679c4241578563bD8A62";
+    const contractAddress = "0xc9CCB3526B413AAAA745f686F5dD90448a192B75";
     const [daoContract, setdaoContract] = useState("");
     const [ethBalance, setEthBalance] = useState(0);
     const { ethereum } = window;
@@ -250,12 +250,8 @@ const DAOContextprovider = ({ children }) => {
     };
 
 
-    const currencyConverterAddress = "0x695b4021847A31EBFA7B8bbb2Df179174731e79d";
+    const currencyConverterAddress = "0xbFc2a45f825FDf488baEBA02d43fE7a5C5911ddA";
     const [maticUSDrate, setMaticUSDrate] = useState(0);
-    const [currAmount, setCurrAmount] = useState(0);
-
-
-
 
     useEffect(() => {
         const getCurrenyConverterContract = async () => {
@@ -275,7 +271,7 @@ const DAOContextprovider = ({ children }) => {
         if (ethereum) {
             getCurrenyConverterContract();
         }
-    }, [ethereum, CurrencyABI, currencyConverterAddress, currentAccount])
+    }, [ethereum, currencyConverterAddress, currentAccount])
 
 
     const fetchAmount = async (amount, curr) => { // matic
@@ -302,7 +298,7 @@ const DAOContextprovider = ({ children }) => {
         <DAOContext.Provider value={{
             ethBalance, connectWallet,
             currentAccount, switchNetwork, disconnectWallet, daoContract,
-            join, joinLoading, currAmount, currency, currencySymbol, fetchAmount, maticUSDrate, isETHPrice, togglePrice, setIsETHPrice, toggleCurrency, setEthBalance
+            join, joinLoading, currency, currencySymbol, fetchAmount, maticUSDrate, isETHPrice, togglePrice, setIsETHPrice, toggleCurrency, setEthBalance
         }}>
             {children}
         </DAOContext.Provider>

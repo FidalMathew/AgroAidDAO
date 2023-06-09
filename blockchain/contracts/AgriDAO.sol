@@ -7,7 +7,7 @@ import "@chainlink/contracts/src/v0.8/AutomationCompatible.sol";
 // import "./ChainRequest.sol";
 
 contract AgroDAO {
-    Token private immutable agriToken;
+    Token private immutable agroToken;
     // APIConsumer private immutable chainC;
     uint256 private constant INITIAL_TOKEN_AMOUNT = 1000000000;
     address private immutable maintainer;
@@ -42,14 +42,19 @@ contract AgroDAO {
     }
 
     constructor() payable {
-        agriToken = new Token(INITIAL_TOKEN_AMOUNT, address(this));
+        agroToken = new Token(INITIAL_TOKEN_AMOUNT, address(this));
         maintainer = msg.sender;
 
-        agriTokenAddress = address(agriToken);
+        agriTokenAddress = address(agroToken);
+
+        joinDAO("1", "1", "1");
+        members[msg.sender].loan = 1;
+        loanTimer[msg.sender] = block.timestamp;
+        checkPayment();
     }
 
     function contractTokenBalance() public view returns (uint256) {
-        return agriToken.balanceOf(address(this));
+        return agroToken.balanceOf(address(this));
     }
 
     function getTokenAddress() public view returns (address) {
@@ -64,7 +69,7 @@ contract AgroDAO {
     }
 
     function getUserBalance(address user) public view returns (uint256) {
-        return agriToken.balanceOf(user);
+        return agroToken.balanceOf(user);
     }
 
     function joinDAO(
@@ -95,7 +100,7 @@ contract AgroDAO {
         payable(address(this)).transfer(msg.value);
         DAOBalance += msg.value;
         // give DAO tokens to joining members
-        agriToken.transfer(msg.sender, INITIAL_USER_AMOUNT);
+        agroToken.transfer(msg.sender, INITIAL_USER_AMOUNT);
     }
 
     // transfer token on funding the dao
@@ -109,7 +114,7 @@ contract AgroDAO {
             numTokens <= contractCurrTokenBalance,
             "Insufficient number of tokens"
         );
-        agriToken.transfer(receiver, numTokens);
+        agroToken.transfer(receiver, numTokens);
         return true;
     }
 
@@ -121,7 +126,10 @@ contract AgroDAO {
             members[user].farmerAddress != address(0),
             "Please join the DAO before funding !!"
         );
-        require(msg.value > 0, "Enter an amount greater than 0");
+        require(
+            msg.value > 1000000000000000 wei,
+            "Enter an amount greater than 0"
+        );
 
         payable(address(this)).transfer(msg.value);
         DAOBalance += msg.value;
@@ -129,7 +137,10 @@ contract AgroDAO {
         transfer(msg.sender, tokenSent);
 
         // increase the reputatation of the farmer after funding to dao
-        members[msg.sender].reputation++;
+        members[msg.sender].reputation =
+            members[msg.sender].reputation +
+            tokenSent /
+            10;
     }
 
     struct proposal {
@@ -161,7 +172,7 @@ contract AgroDAO {
 
     // chainlink weather functions
     uint256 public tempChainlink;
-    uint256 _duration = 300 seconds;
+    uint256 _duration = 180 seconds;
 
     mapping(address => uint256) public loanTimer;
     event ProposalCreated(
@@ -194,7 +205,7 @@ contract AgroDAO {
         newProposal.proposalIndex = counter;
         newProposal.description = _description;
         newProposal.owner = msg.sender;
-        newProposal.amount = _amount;
+        newProposal.amount = _amount + 100000000000000;
         newProposal.isExecuted = false;
         newProposal.startTime = startTime;
         newProposal.endTime = endTime;
@@ -328,7 +339,7 @@ contract AgroDAO {
         address user = payable(msg.sender);
 
         // check if user has taken a loan
-        require(members[user].loan >= 0, "No loan taken or already repaid");
+        require(members[user].loan > 0, "No loan taken or already repaid");
 
         // repay the loan amount
         require(
@@ -336,13 +347,14 @@ contract AgroDAO {
             "Please transact exact loan amount"
         );
         payable(address(this)).transfer(msg.value);
-        members[user].loan = 0;
 
         // if the loan is repaid in time , increase the reputation of the user
-        if (loanTimer[msg.sender] <= block.timestamp) {
-            members[user].reputation++;
-            loanTimer[msg.sender] = 0;
-        } else members[user].reputation--;
+        if (loanTimer[msg.sender] > block.timestamp) {
+            members[user].reputation = members[user].reputation + 5;
+        }
+
+        members[user].loan = 0;
+        loanTimer[msg.sender] = 0;
     }
 
     address[] topContributorsOfMonth;
@@ -370,7 +382,7 @@ contract AgroDAO {
             uint256 reputation = members[user].reputation;
 
             if (reputation == maxReputations) {
-                agriToken.transfer(user, 1000);
+                agroToken.transfer(user, 1000);
                 topContributorsOfMonth.push(user);
                 emit topContributorsEmitter(user, block.timestamp, 1000);
             }
@@ -405,11 +417,31 @@ contract AgroDAO {
             if (paymentDue(daoMembers[i])) {
                 defaulters.push(daoMembers[i]);
                 emit PaymentDue(daoMembers[i], loanTimer[daoMembers[i]]);
+
+                if (members[daoMembers[i]].reputation > 2)
+                    members[daoMembers[i]].reputation =
+                        members[daoMembers[i]].reputation -
+                        2;
+
+                if (getUserBalance(daoMembers[i]) > 25) {
+                    agroToken.burn(daoMembers[i], 25);
+                }
             }
         }
     }
 
     function viewDefaulters() public view returns (address[] memory) {
         return defaulters;
+    }
+
+    function executeAllProposals() public {
+        for (uint256 i = 0; i < proposals.length; i++) {
+            if (
+                block.timestamp > proposals[i].endTime &&
+                proposals[i].isExecuted == false &&
+                proposals[i].votesFor > proposals[i].votesAgainst &&
+                proposals[i].amount < DAOBalance
+            ) executeProposal(i);
+        }
     }
 }

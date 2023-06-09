@@ -61,6 +61,13 @@
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "executeAllProposals",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "uint256",
@@ -108,13 +115,6 @@
     "name": "loanPayBack",
     "outputs": [],
     "stateMutability": "payable",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "topContributorReset",
-    "outputs": [],
-    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
@@ -201,6 +201,13 @@
     ],
     "name": "ProposalCreated",
     "type": "event"
+  },
+  {
+    "inputs": [],
+    "name": "topContributorReset",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
   },
   {
     "anonymous": false,

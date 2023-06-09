@@ -273,12 +273,13 @@ const DAO = () => {
                         fontSize={'4xl'}
                         pb={10}
                         fontWeight={'bold'}>
-                        DAO Community Name 👨‍🌾
+                        AGRO DAO 👨‍🌾
                     </Heading>
+
                     <Container>
                         {/* write a 3 line random description about dao */}
                         <Text textAlign={'center'} fontSize={'md'} pb={10} fontWeight={'normal'}>
-                            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla quam velit, vulputate eu pharetra nec, mattis ac neque. Duis vulputate commodo lectus, ac blandit elit tincidunt id.
+                            Cultivating the Future of Agriculture: Empowering Communities Through Incentivized Decentralization
                         </Text>
                     </Container>
                     <SimpleGrid w="70vw" columns={{ base: 1, lg: 4 }} spacing={{ base: 5, lg: 8 }} m="auto">
@@ -287,7 +288,7 @@ const DAO = () => {
                             stat={isETHPrice ? daoBalance.toString() + " ETH" : (convertedAmount ? convertedAmount + " " + currency : "Loading...")}
                         />
                         <StatsCard title={'AGRO Tokens'} stat={daoToken.toString() + " AGRO"} />
-                        <StatsCard title={'No of Proposals active'} stat={totalProposal} />
+                        <StatsCard title={'No of Proposals'} stat={totalProposal} />
                         <StatsCard title={'Number of Members'} stat={totalMembers} />
                     </SimpleGrid>
                 </Box>
