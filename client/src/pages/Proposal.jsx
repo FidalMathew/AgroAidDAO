@@ -347,12 +347,11 @@ const Proposal = () => {
             <Box mt="6" mb="6">
                 <VStack spacing="10">
                     <VStack>
-                        <Heading>Proposal Title</Heading>
+                        <Heading maxW="xl" textAlign={"center"}>{proposal?.description}</Heading>
                         <Text>initiated by: {proposal?.owner?.toString().slice(0, 5) + "..." + proposal?.owner?.toString().slice(-4)}</Text>
-                        <Text fontSize={"md"} maxW="xl" textAlign={"center"}>
-                            {/* Random text of length 50 words */}
+                        {/* <Text fontSize={"md"}>
                             {proposal?.description}
-                        </Text>
+                        </Text> */}
                     </VStack>
                     <Stack direction={{ base: "column", xl: "row" }} alignItems={"center"} justifyContent={"center"} minW="50vw" spacing="6">
                         <Box border={"1px"} rounded={"xl"} m="5">
