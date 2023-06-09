@@ -289,16 +289,16 @@ const Proposal = () => {
     }, [now, end])
 
     useEffect(() => {
-        if (proposal !== {}) {
-            if (end > now) {
-                const minutes = Math.ceil((end - now) / (1000 * 60))
-                setTimeLeft(minutes);
-            }
-            else {
-                setTimeLeft(0);
-                // setExpired(true);
-            }
+
+        if (end > now) {
+            const minutes = Math.ceil((end - now) / (1000 * 60))
+            setTimeLeft(minutes);
         }
+        else {
+            setTimeLeft(0);
+            // setExpired(true);
+        }
+
     }, [now])
 
 
